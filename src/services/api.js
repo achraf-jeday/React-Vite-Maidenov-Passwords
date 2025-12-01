@@ -3,59 +3,89 @@ export const api = {
   async getUsers(page = 1, pageSize = 10, search = '', sortBy = [{ id: 'id', desc: false }]) {
     const token = localStorage.getItem('maidenov_access_token');
 
-    const offset = (page - 1) * pageSize;
-    const params = new URLSearchParams({
-      'page[limit]': pageSize,
-      'page[offset]': offset
-    });
+    // API limits to 50 records max per request, so we need to fetch multiple pages when pageSize > 50
+    const apiLimit = 50;
+    const totalPagesNeeded = Math.ceil(pageSize / apiLimit);
+    const allData = [];
+    let totalRecords = 0;
 
-    if (search) {
-      params.append('filter[name][condition][path]', 'name');
-      params.append('filter[name][condition][operator]', 'CONTAINS');
-      params.append('filter[name][condition][value]', search);
-    }
+    // Fetch the required number of API pages to fill the requested pageSize
+    for (let i = 0; i < totalPagesNeeded; i++) {
+      const apiPage = (page - 1) * totalPagesNeeded + i + 1;
+      const offset = (apiPage - 1) * apiLimit;
 
-    // Add sorting - default to name ascending if no sort specified
-    const sortColumn = sortBy && sortBy.length > 0 ? sortBy[0].id : 'name';
-    const sortDirection = sortBy && sortBy.length > 0 && sortBy[0].desc ? '-' : '';
-    params.append('sort', `${sortDirection}${sortColumn}`);
+      const params = new URLSearchParams({
+        'page[limit]': apiLimit,
+        'page[offset]': offset
+      });
 
-    const headers = {
-      'Accept': 'application/vnd.api+json'
-    };
+      if (search) {
+        params.append('filter[name][condition][path]', 'name');
+        params.append('filter[name][condition][operator]', 'CONTAINS');
+        params.append('filter[name][condition][value]', search);
+      }
 
-    // Add authentication if token exists
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+      // Add sorting - default to name ascending if no sort specified
+      const sortColumn = sortBy && sortBy.length > 0 ? sortBy[0].id : 'name';
+      const sortDirection = sortBy && sortBy.length > 0 && sortBy[0].desc ? '-' : '';
+      params.append('sort', `${sortDirection}${sortColumn}`);
 
-    try {
-      const response = await fetch(
-        `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
-        {
-          headers
-        }
-      );
+      const headers = {
+        'Accept': 'application/vnd.api+json'
+      };
 
-      if (!response.ok) {
-        // If unauthorized, clear the token and retry without auth
-        if (response.status === 401 && token) {
-          localStorage.removeItem('maidenov_access_token');
-          delete headers['Authorization'];
+      // Add authentication if token exists
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
-          // Retry without authentication
-          const retryResponse = await fetch(
-            `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
-            {
-              headers
-            }
-          );
-
-          if (!retryResponse.ok) {
-            throw new Error(`Failed to fetch users: ${retryResponse.status}`);
+      try {
+        const response = await fetch(
+          `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+          {
+            headers
           }
+        );
 
-          const data = await retryResponse.json();
+        if (!response.ok) {
+          // If unauthorized, clear the token and retry without auth
+          if (response.status === 401 && token) {
+            localStorage.removeItem('maidenov_access_token');
+            delete headers['Authorization'];
+
+            // Retry without authentication
+            const retryResponse = await fetch(
+              `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+              {
+                headers
+              }
+            );
+
+            if (!retryResponse.ok) {
+              throw new Error(`Failed to fetch users: ${retryResponse.status}`);
+            }
+
+            const data = await retryResponse.json();
+            const users = data.data.map(item => ({
+              id: item.id,
+              name: item.attributes.name,
+              role: item.attributes.role || 'User',
+              status: item.attributes.status ? 'Active' : 'Inactive',
+              department: item.attributes.department || 'General',
+              lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
+              created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
+              changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
+              user: item.relationships?.user?.data?.id
+            }));
+
+            allData.push(...users);
+            totalRecords = data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length;
+          } else {
+            throw new Error(`Failed to fetch users: ${response.status}`);
+          }
+        } else {
+          const data = await response.json();
+
           const users = data.data.map(item => ({
             id: item.id,
             name: item.attributes.name,
@@ -68,77 +98,54 @@ export const api = {
             user: item.relationships?.user?.data?.id
           }));
 
-          return {
-            data: users,
-            total: data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length,
-            totalPages: data.meta?.pagination?.total_pages || Math.ceil((data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length) / pageSize),
-            currentPage: page
-          };
-        } else {
-          throw new Error(`Failed to fetch users: ${response.status}`);
+          allData.push(...users);
+          totalRecords = data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length;
         }
-      }
+      } catch (error) {
+        // If fetch fails completely, try without authentication
+        if (token) {
+          localStorage.removeItem('maidenov_access_token');
+          delete headers['Authorization'];
 
-      const data = await response.json();
+          const fallbackResponse = await fetch(
+            `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+            {
+              headers
+            }
+          );
 
-      const users = data.data.map(item => ({
-        id: item.id,
-        name: item.attributes.name,
-        role: item.attributes.role || 'User',
-        status: item.attributes.status ? 'Active' : 'Inactive',
-        department: item.attributes.department || 'General',
-        lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
-        created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
-        changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
-        user: item.relationships?.user?.data?.id
-      }));
-
-      return {
-        data: users,
-        total: data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length,
-        totalPages: data.meta?.pagination?.total_pages || Math.ceil((data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length) / pageSize),
-        currentPage: page
-      };
-    } catch (error) {
-      // If fetch fails completely, try without authentication
-      if (token) {
-        localStorage.removeItem('maidenov_access_token');
-        delete headers['Authorization'];
-
-        const fallbackResponse = await fetch(
-          `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
-          {
-            headers
+          if (!fallbackResponse.ok) {
+            throw new Error(`Failed to fetch users: ${fallbackResponse.status}`);
           }
-        );
 
-        if (!fallbackResponse.ok) {
-          throw new Error(`Failed to fetch users: ${fallbackResponse.status}`);
+          const data = await fallbackResponse.json();
+          const users = data.data.map(item => ({
+            id: item.id,
+            name: item.attributes.name,
+            role: item.attributes.role || 'User',
+            status: item.attributes.status ? 'Active' : 'Inactive',
+            department: item.attributes.department || 'General',
+            lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
+            created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
+            changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
+            user: item.relationships?.user?.data?.id
+          }));
+
+          allData.push(...users);
+          totalRecords = data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length;
+        } else {
+          throw error;
         }
-
-        const data = await fallbackResponse.json();
-        const users = data.data.map(item => ({
-          id: item.id,
-          name: item.attributes.name,
-          role: item.attributes.role || 'User',
-          status: item.attributes.status ? 'Active' : 'Inactive',
-          department: item.attributes.department || 'General',
-          lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
-          created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
-          changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
-          user: item.relationships?.user?.data?.id
-        }));
-
-        return {
-          data: users,
-          total: data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length,
-          totalPages: data.meta?.pagination?.total_pages || Math.ceil((data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length) / pageSize),
-          currentPage: page
-        };
       }
-
-      throw error;
     }
+
+    // Return only the number of records requested by pageSize
+    return {
+      data: allData.slice(0, pageSize),
+      total: totalRecords,
+      totalPages: Math.ceil(totalRecords / pageSize),
+      currentPage: page
+    };
   },
 
   async deleteUser(id) {

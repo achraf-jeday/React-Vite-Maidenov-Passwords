@@ -221,37 +221,43 @@ const DataTable = ({ user }) => {
       cell: ({ row }) => (
         <Box display="flex" gap={1}>
           <Tooltip title="View Details">
-            <IconButton
-              size="small"
-              onClick={() => {
-                setSelectedRow(row.original);
-                setDetailOpen(true);
-              }}
-              color="primary"
-            >
-              <VisibilityIcon />
-            </IconButton>
+            <span>
+              <IconButton
+                size="small"
+                onClick={() => {
+                  setSelectedRow(row.original);
+                  setDetailOpen(true);
+                }}
+                color="primary"
+              >
+                <VisibilityIcon />
+              </IconButton>
+            </span>
           </Tooltip>
           <Tooltip title="Edit">
-            <IconButton
-              size="small"
-              onClick={() => toast.info('Edit functionality would open here')}
-              color="info"
-            >
-              <EditIcon />
-            </IconButton>
+            <span>
+              <IconButton
+                size="small"
+                onClick={() => toast.info('Edit functionality would open here')}
+                color="info"
+              >
+                <EditIcon />
+              </IconButton>
+            </span>
           </Tooltip>
           <Tooltip title="Delete">
-            <IconButton
-              size="small"
-              onClick={() => {
-                setSelectedRow(row.original);
-                setDeleteConfirmOpen(true);
-              }}
-              color="error"
-            >
-              <DeleteIcon />
-            </IconButton>
+            <span>
+              <IconButton
+                size="small"
+                onClick={() => {
+                  setSelectedRow(row.original);
+                  setDeleteConfirmOpen(true);
+                }}
+                color="error"
+              >
+                <DeleteIcon />
+              </IconButton>
+            </span>
           </Tooltip>
         </Box>
       ),
@@ -348,115 +354,141 @@ const DataTable = ({ user }) => {
       <Toaster position="top-right" />
 
       {/* Search Bar - Moved to top without header */}
-      <Paper className="datatable-header" elevation={0} sx={{ borderRadius: 3, p: 3, mb: 3 }}>
-        <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }} gap={{ xs: 2, sm: 0 }} mb={2}>
+      <Paper
+        elevation={3}
+        sx={{
+          borderRadius: 3,
+          p: 3,
+          mb: 3,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '100px',
+            height: '100px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '50%',
+            transform: 'translate(20px, -20px)'
+          }
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Box>
-            <Typography variant="h5" fontWeight="700" className="gradient-text">
-              User Management
+            <Typography variant="h6" fontWeight="700" sx={{ letterSpacing: '0.5px' }}>
+              Current Users
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Manage your team members and their permissions
+            <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+              {searchTerm ? `Filtered by: "${searchTerm}"` : 'Filtered users from total'}
             </Typography>
           </Box>
-          <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
-            <TextField
-              fullWidth
-              placeholder="Search users by name, email, or role..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setPage(1); // Reset to first page when searching
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ color: '#667eea' }} />
-                  </InputAdornment>
-                ),
-                sx: {
-                  borderRadius: '12px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'transparent'
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(102, 126, 234, 0.8)'
-                  },
-                  '& .MuiInputBase-input': {
-                    color: '#333'
-                  },
-                  '& .MuiInputBase-input::placeholder': {
-                    color: 'rgba(102, 126, 234, 0.6)',
-                    opacity: 1
-                  },
-                  minWidth: { xs: '100%', sm: 300, md: 400 }
-                }
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
-                    borderColor: 'transparent',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(102, 126, 234, 0.8)',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#667eea',
-                    boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)',
-                  },
-                }
-              }}
-            />
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => toast.success('Add user functionality would open here')}
-              sx={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                color: '#667eea',
-                fontWeight: 700,
-                borderRadius: '12px',
-                border: '2px solid rgba(102, 126, 234, 0.8)',
-                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 1)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 16px rgba(102, 126, 234, 0.4)',
-                  borderColor: '#667eea'
-                },
-                px: 3,
-                py: 1
-              }}
-            >
-              Add User
-            </Button>
-            <Tooltip title="Refresh Data">
+          <Tooltip title="Refresh Data">
+            <span>
               <IconButton
                 onClick={handleRefresh}
+                disabled={loading}
                 sx={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  color: '#667eea',
-                  borderRadius: '12px',
-                  border: '2px solid rgba(102, 126, 234, 0.8)',
-                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
-                  transition: 'all 0.3s ease',
+                  color: 'white',
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 1)',
-                    transform: 'scale(1.05)',
-                    boxShadow: '0 6px 16px rgba(102, 126, 234, 0.4)',
-                    borderColor: '#667eea'
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
                   },
-                  '&:active': {
-                    transform: 'scale(0.98)'
+                  '&:disabled': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
                   }
                 }}
               >
-                <RefreshIcon sx={{ fontSize: 24, color: '#667eea' }} />
+                <RefreshIcon />
               </IconButton>
-            </Tooltip>
+            </span>
+          </Tooltip>
+        </Box>
+
+        {/* Search Section */}
+        <Box mb={3}>
+          <TextField
+            fullWidth
+            placeholder="Search users by name, email, or role..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1); // Reset to first page when searching
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                </InputAdornment>
+              ),
+              sx: {
+                borderRadius: '12px',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                color: '#333',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'transparent'
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(102, 126, 234, 0.8)'
+                },
+                '& .MuiInputBase-input': {
+                  color: '#333'
+                },
+                '& .MuiInputBase-input::placeholder': {
+                  color: 'rgba(102, 126, 234, 0.6)',
+                  opacity: 1
+                }
+              }
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: 'transparent',
+                },
+                '&:hover fieldset': {
+                  borderColor: 'rgba(102, 126, 234, 0.8)',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#667eea',
+                  boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)',
+                },
+              }
+            }}
+          />
+        </Box>
+
+        <Box display="flex" alignItems="center" gap={2}>
+          {loading ? (
+            <CircularProgress size={28} sx={{ color: 'white' }} />
+          ) : (
+            <Typography variant="h2" fontWeight="800" sx={{ letterSpacing: '2px' }}>
+              {totalCount.toLocaleString()}
+            </Typography>
+          )}
+          <Box>
+            <Chip
+              label={loading ? 'Loading...' : searchTerm ? 'Filtered Count' : 'Live Count'}
+              color="success"
+              size="small"
+              variant="outlined"
+              sx={{
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                color: 'white',
+                fontWeight: 600
+              }}
+            />
           </Box>
         </Box>
+
+        {!loading && (
+          <Typography variant="caption" sx={{ opacity: 0.8, mt: 1, display: 'block' }}>
+            Last updated: {new Date().toLocaleTimeString()}
+          </Typography>
+        )}
       </Paper>
 
       {/* Table */}
