@@ -3,20 +3,48 @@ export const api = {
   async getUsers(page = 1, pageSize = 10, search = '', sortBy = [{ id: 'id', desc: false }]) {
     const token = localStorage.getItem('maidenov_access_token');
 
-    // API limits to 50 records max per request, so we need to fetch multiple pages when pageSize > 50
+    // API limits to 50 records max per request
     const apiLimit = 50;
-    const totalPagesNeeded = Math.ceil(pageSize / apiLimit);
     const allData = [];
     let totalRecords = 0;
 
-    // Fetch the required number of API pages to fill the requested pageSize
+    // Calculate how many API pages we need to fetch
+    let totalPagesNeeded;
+    let apiPage;
+    let offset;
+    let effectiveLimit;
+
+    if (pageSize <= apiLimit) {
+      // For pageSize <= 50, we just need one API call
+      totalPagesNeeded = 1;
+      apiPage = page;
+      offset = (page - 1) * pageSize;
+      effectiveLimit = pageSize; // Use the requested pageSize, not the API limit
+    } else {
+      // For pageSize > 50, we need multiple API calls
+      totalPagesNeeded = Math.ceil(pageSize / apiLimit);
+      apiPage = (page - 1) * totalPagesNeeded + 1; // Start from the first API page for this frontend page
+      offset = (apiPage - 1) * apiLimit;
+      effectiveLimit = apiLimit; // Use the API limit for each call
+    }
+
+    // Fetch the required API pages
     for (let i = 0; i < totalPagesNeeded; i++) {
-      const apiPage = (page - 1) * totalPagesNeeded + i + 1;
-      const offset = (apiPage - 1) * apiLimit;
+      const currentApiPage = apiPage + i;
+
+      // Calculate the correct offset based on pageSize vs apiLimit
+      let currentOffset;
+      if (pageSize <= apiLimit) {
+        // For pageSize <= 50, use the calculated offset directly
+        currentOffset = offset;
+      } else {
+        // For pageSize > 50, calculate offset for each API page
+        currentOffset = (currentApiPage - 1) * apiLimit;
+      }
 
       const params = new URLSearchParams({
-        'page[limit]': apiLimit,
-        'page[offset]': offset
+        'page[limit]': effectiveLimit,
+        'page[offset]': currentOffset
       });
 
       if (search) {

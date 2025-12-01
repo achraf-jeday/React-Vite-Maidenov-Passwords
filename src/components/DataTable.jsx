@@ -99,6 +99,31 @@ const DataTable = ({ user }) => {
     });
   };
 
+  // Edit modal state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    role: '',
+    status: '',
+    department: ''
+  });
+
+  const handleEditClick = (row) => {
+    setSelectedRow(row.original);
+    setEditFormData({
+      name: row.original.name || '',
+      role: row.original.role || 'User',
+      status: row.original.status || 'Active',
+      department: row.original.department || 'General'
+    });
+    setEditOpen(true);
+  };
+
+  const handleEditClose = () => {
+    setEditOpen(false);
+    setSelectedRow(null);
+  };
+
   // Column definitions with responsive visibility
   const columns = useMemo(() => [
     {
@@ -238,7 +263,7 @@ const DataTable = ({ user }) => {
             <span>
               <IconButton
                 size="small"
-                onClick={() => toast.info('Edit functionality would open here')}
+                onClick={() => handleEditClick(row)}
                 color="info"
               >
                 <EditIcon />
@@ -633,6 +658,103 @@ const DataTable = ({ user }) => {
         </Typography>
       </Box>
 
+      {/* Edit Modal */}
+      <Dialog
+        open={editOpen}
+        onClose={handleEditClose}
+        maxWidth="sm"
+        fullWidth
+        className="edit-modal"
+      >
+        <DialogTitle>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" fontWeight="700">
+              Edit User
+            </Typography>
+            <Chip
+              label={selectedRow?.status || 'Active'}
+              color={selectedRow?.status === 'Active' ? 'success' : 'error'}
+              size="small"
+            />
+          </Box>
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedRow && (
+            <Grid container spacing={3}>
+              <Grid item xs={12} display="flex" justifyContent="center">
+                <Avatar src={selectedRow.avatar} alt={selectedRow.name} sx={{ width: 80, height: 80 }}>
+                  {selectedRow.name.charAt(0)}
+                </Avatar>
+              </Grid>
+              <Grid item xs={12} textAlign="center">
+                <Typography variant="h6" fontWeight="600">
+                  {selectedRow.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {selectedRow.email}
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Name"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  variant="outlined"
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Role"
+                  value={editFormData.role}
+                  onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
+                >
+                  {['Admin', 'Editor', 'Viewer', 'User'].map((role) => (
+                    <MenuItem key={role} value={role}>{role}</MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              <Grid item xs={6}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Status"
+                  value={editFormData.status}
+                  onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                >
+                  {['Active', 'Inactive'].map((status) => (
+                    <MenuItem key={status} value={status}>{status}</MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Department"
+                  value={editFormData.department}
+                  onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
+                  variant="outlined"
+                />
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditClose} variant="outlined">
+            Cancel
+          </Button>
+          <Button onClick={() => toast.success('User updated successfully!')} variant="contained" color="primary">
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Detail Modal */}
       <Dialog
         open={detailOpen}
@@ -703,7 +825,7 @@ const DataTable = ({ user }) => {
                   Permissions
                 </Typography>
                 <Box display="flex" flexWrap="wrap" gap={1}>
-                  {selectedRow.permissions.map((perm, index) => (
+                  {selectedRow.permissions?.map((perm, index) => (
                     <Chip key={index} label={perm} size="small" variant="outlined" />
                   ))}
                 </Box>
