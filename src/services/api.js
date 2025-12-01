@@ -70,8 +70,8 @@ export const api = {
 
           return {
             data: users,
-            total: data.meta?.pagination?.total || 51,
-            totalPages: data.meta?.pagination?.total_pages || Math.ceil(51 / pageSize),
+            total: data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length,
+            totalPages: data.meta?.pagination?.total_pages || Math.ceil((data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length) / pageSize),
             currentPage: page
           };
         } else {
@@ -95,8 +95,8 @@ export const api = {
 
       return {
         data: users,
-        total: data.meta?.pagination?.total || 51,
-        totalPages: data.meta?.pagination?.total_pages || Math.ceil(51 / pageSize),
+        total: data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length,
+        totalPages: data.meta?.pagination?.total_pages || Math.ceil((data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length) / pageSize),
         currentPage: page
       };
     } catch (error) {
@@ -131,8 +131,8 @@ export const api = {
 
         return {
           data: users,
-          total: data.meta?.pagination?.total || 51,
-          totalPages: data.meta?.pagination?.total_pages || Math.ceil(51 / pageSize),
+          total: data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length,
+          totalPages: data.meta?.pagination?.total_pages || Math.ceil((data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length) / pageSize),
           currentPage: page
         };
       }
