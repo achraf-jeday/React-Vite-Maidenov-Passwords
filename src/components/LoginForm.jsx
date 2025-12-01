@@ -63,14 +63,50 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <h1>Maidenov Passwords</h1>
-        <p className="login-subtitle">Sign in to access your dashboard</p>
+    <div className="login-container" style={{
+      width: '100%',
+      maxWidth: '400px',
+      padding: '20px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%'
+    }}>
+      <div className="login-box" style={{
+        background: 'white',
+        padding: '40px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        width: '100%',
+        maxWidth: '400px'
+      }}>
+        <h1 style={{
+          textAlign: 'center',
+          color: '#333',
+          marginBottom: '30px',
+          fontSize: '24px',
+          fontWeight: '600'
+        }}>
+          Maidenov Passwords
+        </h1>
 
-        <form className="login-form" onSubmit={handleLogin}>
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
+        <form className="login-form" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px'
+        }} onSubmit={handleLogin}>
+          <div className="form-group" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <label htmlFor="username" style={{
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#555'
+            }}>
+              Username
+            </label>
             <input
               type="text"
               id="username"
@@ -80,11 +116,28 @@ const LoginForm = () => {
               onChange={(e) => setUsername(e.target.value)}
               disabled={loading}
               required
+              style={{
+                padding: '12px 16px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '16px',
+                transition: 'border-color 0.3s ease'
+              }}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+          <div className="form-group" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <label htmlFor="password" style={{
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#555'
+            }}>
+              Password
+            </label>
             <input
               type="password"
               id="password"
@@ -94,6 +147,13 @@ const LoginForm = () => {
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
               required
+              style={{
+                padding: '12px 16px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '16px',
+                transition: 'border-color 0.3s ease'
+              }}
             />
           </div>
 
@@ -101,6 +161,17 @@ const LoginForm = () => {
             type="submit"
             className="login-button"
             disabled={loading}
+            style={{
+              background: '#007bff',
+              color: 'white',
+              border: 'none',
+              padding: '12px',
+              borderRadius: '4px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s ease'
+            }}
           >
             {loading ? (
               <>
@@ -113,24 +184,25 @@ const LoginForm = () => {
           </button>
 
           {loading && (
-            <p className="login-hint">
+            <p className="login-hint" style={{
+              textAlign: 'center',
+              color: '#666',
+              fontSize: '14px'
+            }}>
               Authenticating with Drupal...
             </p>
           )}
 
           {error && (
-            <p className="error-message" style={{color: 'red'}}>
+            <p className="error-message" style={{
+              color: 'red',
+              textAlign: 'center',
+              fontSize: '14px'
+            }}>
               {error}
             </p>
           )}
         </form>
-
-        <div className="login-footer">
-          <p className="oauth-info">
-            Your credentials are sent directly to Drupal for secure authentication.
-            No redirects, seamless experience!
-          </p>
-        </div>
       </div>
     </div>
   );
