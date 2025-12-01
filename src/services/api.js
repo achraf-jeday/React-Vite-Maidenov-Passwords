@@ -29,37 +29,116 @@ export const api = {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(
-      `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
-      {
-        headers
+    try {
+      const response = await fetch(
+        `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+        {
+          headers
+        }
+      );
+
+      if (!response.ok) {
+        // If unauthorized, clear the token and retry without auth
+        if (response.status === 401 && token) {
+          localStorage.removeItem('maidenov_access_token');
+          delete headers['Authorization'];
+
+          // Retry without authentication
+          const retryResponse = await fetch(
+            `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+            {
+              headers
+            }
+          );
+
+          if (!retryResponse.ok) {
+            throw new Error(`Failed to fetch users: ${retryResponse.status}`);
+          }
+
+          const data = await retryResponse.json();
+          const users = data.data.map(item => ({
+            id: item.id,
+            name: item.attributes.name,
+            role: item.attributes.role || 'User',
+            status: item.attributes.status ? 'Active' : 'Inactive',
+            department: item.attributes.department || 'General',
+            lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
+            created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
+            changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
+            user: item.relationships?.user?.data?.id
+          }));
+
+          return {
+            data: users,
+            total: data.meta?.pagination?.total || 51,
+            totalPages: data.meta?.pagination?.total_pages || Math.ceil(51 / pageSize),
+            currentPage: page
+          };
+        } else {
+          throw new Error(`Failed to fetch users: ${response.status}`);
+        }
       }
-    );
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch users: ${response.status}`);
+      const data = await response.json();
+
+      const users = data.data.map(item => ({
+        id: item.id,
+        name: item.attributes.name,
+        role: item.attributes.role || 'User',
+        status: item.attributes.status ? 'Active' : 'Inactive',
+        department: item.attributes.department || 'General',
+        lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
+        created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
+        changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
+        user: item.relationships?.user?.data?.id
+      }));
+
+      return {
+        data: users,
+        total: data.meta?.pagination?.total || 51,
+        totalPages: data.meta?.pagination?.total_pages || Math.ceil(51 / pageSize),
+        currentPage: page
+      };
+    } catch (error) {
+      // If fetch fails completely, try without authentication
+      if (token) {
+        localStorage.removeItem('maidenov_access_token');
+        delete headers['Authorization'];
+
+        const fallbackResponse = await fetch(
+          `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+          {
+            headers
+          }
+        );
+
+        if (!fallbackResponse.ok) {
+          throw new Error(`Failed to fetch users: ${fallbackResponse.status}`);
+        }
+
+        const data = await fallbackResponse.json();
+        const users = data.data.map(item => ({
+          id: item.id,
+          name: item.attributes.name,
+          role: item.attributes.role || 'User',
+          status: item.attributes.status ? 'Active' : 'Inactive',
+          department: item.attributes.department || 'General',
+          lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
+          created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
+          changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
+          user: item.relationships?.user?.data?.id
+        }));
+
+        return {
+          data: users,
+          total: data.meta?.pagination?.total || 51,
+          totalPages: data.meta?.pagination?.total_pages || Math.ceil(51 / pageSize),
+          currentPage: page
+        };
+      }
+
+      throw error;
     }
-
-    const data = await response.json();
-
-    const users = data.data.map(item => ({
-      id: item.id,
-      name: item.attributes.name,
-      role: item.attributes.role || 'User',
-      status: item.attributes.status ? 'Active' : 'Inactive',
-      department: item.attributes.department || 'General',
-      lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
-      created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
-      changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
-      user: item.relationships?.user?.data?.id
-    }));
-
-    return {
-      data: users,
-      total: data.meta?.pagination?.total || 51, // Fallback to 51 if not available
-      totalPages: data.meta?.pagination?.total_pages || Math.ceil(51 / pageSize),
-      currentPage: page
-    };
   },
 
   async deleteUser(id) {
