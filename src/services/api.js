@@ -1,4 +1,6 @@
 // Real API service for Drupal 11 JSON:API integration
+import { refreshAccessToken } from './authService';
+
 export const api = {
   async getUsers(page = 1, pageSize = 10, search = '', sortBy = [{ id: 'id', desc: false }]) {
     const token = localStorage.getItem('maidenov_access_token');
@@ -76,38 +78,104 @@ export const api = {
         );
 
         if (!response.ok) {
-          // If unauthorized, clear the token and retry without auth
+          // If unauthorized, try to refresh the token first
           if (response.status === 401 && token) {
-            localStorage.removeItem('maidenov_access_token');
-            delete headers['Authorization'];
+            try {
+              // Attempt to refresh the token
+              await refreshAccessToken();
+              const newToken = localStorage.getItem('maidenov_access_token');
 
-            // Retry without authentication
-            const retryResponse = await fetch(
-              `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
-              {
-                headers
+              if (newToken) {
+                // Retry with the new token
+                headers['Authorization'] = `Bearer ${newToken}`;
+                const retryResponse = await fetch(
+                  `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+                  {
+                    headers
+                  }
+                );
+
+                if (!retryResponse.ok) {
+                  throw new Error(`Failed to fetch users after token refresh: ${retryResponse.status}`);
+                }
+
+                const data = await retryResponse.json();
+                const users = data.data.map(item => ({
+                  id: item.id,
+                  name: item.attributes.name,
+                  status: item.attributes.status ? 'Active' : 'Inactive',
+                  department: item.attributes.department || 'General',
+                  lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
+                  created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
+                  changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
+                  user: item.relationships?.user?.data?.id
+                }));
+
+                allData.push(...users);
+                totalRecords = data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length;
+              } else {
+                // No new token available, clear the old one and retry without auth
+                localStorage.removeItem('maidenov_access_token');
+                delete headers['Authorization'];
+
+                const retryResponse = await fetch(
+                  `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+                  {
+                    headers
+                  }
+                );
+
+                if (!retryResponse.ok) {
+                  throw new Error(`Failed to fetch users: ${retryResponse.status}`);
+                }
+
+                const data = await retryResponse.json();
+                const users = data.data.map(item => ({
+                  id: item.id,
+                  name: item.attributes.name,
+                  status: item.attributes.status ? 'Active' : 'Inactive',
+                  department: item.attributes.department || 'General',
+                  lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
+                  created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
+                  changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
+                  user: item.relationships?.user?.data?.id
+                }));
+
+                allData.push(...users);
+                totalRecords = data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length;
               }
-            );
+            } catch (refreshError) {
+              // Refresh failed, clear token and retry without auth
+              localStorage.removeItem('maidenov_access_token');
+              delete headers['Authorization'];
 
-            if (!retryResponse.ok) {
-              throw new Error(`Failed to fetch users: ${retryResponse.status}`);
+              const retryResponse = await fetch(
+                `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+                {
+                  headers
+                }
+              );
+
+              if (!retryResponse.ok) {
+                throw new Error(`Failed to fetch users: ${retryResponse.status}`);
+              }
+
+              const data = await retryResponse.json();
+              const users = data.data.map(item => ({
+                id: item.id,
+                name: item.attributes.name,
+                role: item.attributes.role || 'User',
+                status: item.attributes.status ? 'Active' : 'Inactive',
+                department: item.attributes.department || 'General',
+                lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
+                created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
+                changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
+                user: item.relationships?.user?.data?.id
+              }));
+
+              allData.push(...users);
+              totalRecords = data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length;
             }
-
-            const data = await retryResponse.json();
-            const users = data.data.map(item => ({
-              id: item.id,
-              name: item.attributes.name,
-              role: item.attributes.role || 'User',
-              status: item.attributes.status ? 'Active' : 'Inactive',
-              department: item.attributes.department || 'General',
-              lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
-              created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
-              changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
-              user: item.relationships?.user?.data?.id
-            }));
-
-            allData.push(...users);
-            totalRecords = data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length;
           } else {
             throw new Error(`Failed to fetch users: ${response.status}`);
           }
@@ -190,7 +258,38 @@ export const api = {
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to delete user: ${response.status}`);
+      // Handle 401 errors by refreshing token
+      if (response.status === 401 && token) {
+        try {
+          await refreshAccessToken();
+          const newToken = localStorage.getItem('maidenov_access_token');
+
+          if (newToken) {
+            // Retry with new token
+            const retryResponse = await fetch(
+              `http://localhost:8080/jsonapi/user_confidential_data/type_1/${id}`,
+              {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${newToken}`
+                }
+              }
+            );
+
+            if (!retryResponse.ok) {
+              throw new Error(`Failed to delete user after token refresh: ${retryResponse.status}`);
+            }
+
+            return { success: true };
+          } else {
+            throw new Error('Unable to refresh access token');
+          }
+        } catch (refreshError) {
+          throw new Error(`Failed to delete user: ${response.status} (Token refresh failed)`);
+        }
+      } else {
+        throw new Error(`Failed to delete user: ${response.status}`);
+      }
     }
 
     return { success: true };
@@ -205,7 +304,6 @@ export const api = {
         id: id,
         attributes: {
           name: data.name,
-          role: data.role,
           status: data.status === 'Active',
           department: data.department
         }
@@ -225,7 +323,53 @@ export const api = {
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to update user: ${response.status}`);
+      // Handle 401 errors by refreshing token
+      if (response.status === 401 && token) {
+        try {
+          await refreshAccessToken();
+          const newToken = localStorage.getItem('maidenov_access_token');
+
+          if (newToken) {
+            // Retry with new token
+            const retryResponse = await fetch(
+              `http://localhost:8080/jsonapi/user_confidential_data/type_1/${id}`,
+              {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/vnd.api+json',
+                  'Authorization': `Bearer ${newToken}`
+                },
+                body: JSON.stringify(requestBody)
+              }
+            );
+
+            if (!retryResponse.ok) {
+              throw new Error(`Failed to update user after token refresh: ${retryResponse.status}`);
+            }
+
+            const result = await retryResponse.json();
+
+            return {
+              success: true,
+              data: {
+                id: result.data.id,
+                name: result.data.attributes.name,
+                status: result.data.attributes.status ? 'Active' : 'Inactive',
+                department: result.data.attributes.department,
+                lastLogin: result.data.attributes.last_login ? new Date(result.data.attributes.last_login).toLocaleDateString() : 'Never',
+                created: result.data.attributes.created ? new Date(result.data.attributes.created).toLocaleDateString() : 'Unknown',
+                changed: result.data.attributes.changed ? new Date(result.data.attributes.changed).toLocaleDateString() : 'Unknown'
+              }
+            };
+          } else {
+            throw new Error('Unable to refresh access token');
+          }
+        } catch (refreshError) {
+          throw new Error(`Failed to update user: ${response.status} (Token refresh failed)`);
+        }
+      } else {
+        throw new Error(`Failed to update user: ${response.status}`);
+      }
     }
 
     const result = await response.json();

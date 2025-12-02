@@ -67,7 +67,7 @@ export const exchangeCodeForTokens = async (authorizationCode) => {
     code_verifier: codeVerifier
   });
 
-  const response = await fetch(`/oauth/token`, {
+  const response = await fetch(`http://localhost:8080/oauth/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -114,7 +114,7 @@ export const refreshAccessToken = async () => {
     refresh_token: refreshToken
   });
 
-  const response = await fetch(`/oauth/token`, {
+  const response = await fetch(`http://localhost:8080/oauth/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',

@@ -103,7 +103,6 @@ const DataTable = ({ user }) => {
   const [editOpen, setEditOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
     name: '',
-    role: '',
     status: '',
     department: ''
   });
@@ -112,7 +111,6 @@ const DataTable = ({ user }) => {
     setSelectedRow(row.original);
     setEditFormData({
       name: row.original.name || '',
-      role: row.original.role || 'User',
       status: row.original.status || 'Active',
       department: row.original.department || 'General'
     });
@@ -122,6 +120,21 @@ const DataTable = ({ user }) => {
   const handleEditClose = () => {
     setEditOpen(false);
     setSelectedRow(null);
+  };
+
+  const handleEditSave = async () => {
+    if (!selectedRow) return;
+
+    try {
+      await api.updateUser(selectedRow.id, editFormData);
+      toast.success('User updated successfully!');
+      setEditOpen(false);
+      setSelectedRow(null);
+      fetchData(); // Refresh data
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast.error('Failed to update user. Please check your permissions.');
+    }
   };
 
   // Column definitions with responsive visibility
@@ -160,26 +173,6 @@ const DataTable = ({ user }) => {
       meta: {
         responsive: {
           xs: true,  // Always show on mobile
-          sm: true,  // Show on small screens
-          md: true   // Show on medium+ screens
-        }
-      }
-    },
-    {
-      header: 'Role',
-      accessorKey: 'role',
-      cell: ({ row }) => (
-        <Chip
-          label={row.original.role}
-          color={row.original.role === 'Admin' ? 'primary' : row.original.role === 'Editor' ? 'secondary' : 'default'}
-          size="small"
-          variant="outlined"
-        />
-      ),
-      enableSorting: true,
-      meta: {
-        responsive: {
-          xs: false, // Hide on mobile
           sm: true,  // Show on small screens
           md: true   // Show on medium+ screens
         }
@@ -306,10 +299,10 @@ const DataTable = ({ user }) => {
         col.id === 'actions'
       );
     } else if (isTablet) {
-      // Tablet: User, Role, Status, Actions
+      // Tablet: User, Department, Status, Actions
       return columns.filter(col =>
         col.accessorKey === 'name' ||
-        col.accessorKey === 'role' ||
+        col.accessorKey === 'department' ||
         col.accessorKey === 'status' ||
         col.id === 'actions'
       );
@@ -705,21 +698,17 @@ const DataTable = ({ user }) => {
                 />
               </Grid>
 
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <TextField
-                  select
                   fullWidth
-                  label="Role"
-                  value={editFormData.role}
-                  onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
-                >
-                  {['Admin', 'Editor', 'Viewer', 'User'].map((role) => (
-                    <MenuItem key={role} value={role}>{role}</MenuItem>
-                  ))}
-                </TextField>
+                  label="Department"
+                  value={editFormData.department}
+                  onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
+                  variant="outlined"
+                />
               </Grid>
 
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <TextField
                   select
                   fullWidth
@@ -732,16 +721,6 @@ const DataTable = ({ user }) => {
                   ))}
                 </TextField>
               </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Department"
-                  value={editFormData.department}
-                  onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
-                  variant="outlined"
-                />
-              </Grid>
             </Grid>
           )}
         </DialogContent>
@@ -749,7 +728,7 @@ const DataTable = ({ user }) => {
           <Button onClick={handleEditClose} variant="outlined">
             Cancel
           </Button>
-          <Button onClick={() => toast.success('User updated successfully!')} variant="contained" color="primary">
+          <Button onClick={handleEditSave} variant="contained" color="primary">
             Save Changes
           </Button>
         </DialogActions>
@@ -791,18 +770,7 @@ const DataTable = ({ user }) => {
                   {selectedRow.email}
                 </Typography>
               </Grid>
-              <Grid item xs={6}>
-                <Typography variant="subtitle2" fontWeight="600" gutterBottom>
-                  Role
-                </Typography>
-                <Chip
-                  label={selectedRow.role}
-                  color={selectedRow.role === 'Admin' ? 'primary' : selectedRow.role === 'Editor' ? 'secondary' : 'default'}
-                  size="small"
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <Typography variant="subtitle2" fontWeight="600" gutterBottom>
                   Department
                 </Typography>
