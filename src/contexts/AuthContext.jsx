@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { authenticateWithDrupal, refreshAccessToken, logoutFromDrupal, getUserInfo } from '../services/authService';
+import { authenticateWithDrupal, refreshAccessToken, logoutFromDrupal, getUserInfo, buildAuthorizationUrl, exchangeCodeForTokens } from '../services/authService';
 import OAUTH_CONFIG from '../config/oauth';
 
 // Create Auth Context
@@ -75,10 +75,10 @@ export const AuthProvider = ({ children }) => {
             throw new Error('Invalid state parameter');
           }
 
-          // Authenticate with Drupal
-          const authResult = await authenticateWithDrupal(code);
+          // Exchange code for tokens
+          const authResult = await exchangeCodeForTokens(code);
 
-          if (authResult.success) {
+          if (authResult.access_token) {
             // Get user info
             const userInfo = await getUserInfo();
             setUser(userInfo);
@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }) => {
             const redirectUrl = window.location.origin;
             window.location.href = redirectUrl;
           } else {
-            setError(authResult.error);
+            throw new Error('No access token received');
           }
         } catch (error) {
           console.error('OAuth callback error:', error);
@@ -103,8 +103,8 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async () => {
     try {
       setError(null);
-      // This will redirect to Drupal OAuth login page
-      const authUrl = await authenticateWithDrupal();
+      // Build authorization URL and redirect to Drupal OAuth login page
+      const authUrl = await buildAuthorizationUrl();
       if (authUrl) {
         window.location.href = authUrl;
       }

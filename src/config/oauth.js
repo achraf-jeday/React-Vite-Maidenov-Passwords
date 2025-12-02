@@ -15,8 +15,8 @@ const OAUTH_CONFIG = {
 
   // Your OAuth2 client credentials
   // These are created in Drupal: Configuration > Web services > Simple OAuth
-  // CLIENT_ID: 'test-frontend',
-  // CLIENT_SECRET: 'test-secret-key-12345',
+  CLIENT_ID: 'test-frontend',
+  CLIENT_SECRET: 'test-secret-key-12345',
 
   // OAuth2 configuration for ROPC (Resource Owner Password Credentials) flow
   OAUTH_CONFIG: {

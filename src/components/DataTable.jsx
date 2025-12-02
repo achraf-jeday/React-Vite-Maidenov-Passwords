@@ -102,17 +102,13 @@ const DataTable = ({ user }) => {
   // Edit modal state
   const [editOpen, setEditOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
-    name: '',
-    status: '',
-    department: ''
+    name: ''
   });
 
   const handleEditClick = (row) => {
     setSelectedRow(row.original);
     setEditFormData({
-      name: row.original.name || '',
-      status: row.original.status || 'Active',
-      department: row.original.department || 'General'
+      name: row.original.name || ''
     });
     setEditOpen(true);
   };
@@ -173,43 +169,6 @@ const DataTable = ({ user }) => {
       meta: {
         responsive: {
           xs: true,  // Always show on mobile
-          sm: true,  // Show on small screens
-          md: true   // Show on medium+ screens
-        }
-      }
-    },
-    {
-      header: 'Department',
-      accessorKey: 'department',
-      cell: ({ row }) => (
-        <Typography variant="body2" sx={{ display: { xs: 'none', md: 'block' } }}>
-          {row.original.department}
-        </Typography>
-      ),
-      enableSorting: true,
-      meta: {
-        responsive: {
-          xs: false, // Hide on mobile
-          sm: false, // Hide on small screens
-          md: true   // Show on medium+ screens
-        }
-      }
-    },
-    {
-      header: 'Status',
-      accessorKey: 'status',
-      cell: ({ row }) => (
-        <Chip
-          label={row.original.status}
-          color={row.original.status === 'Active' ? 'success' : 'error'}
-          size="small"
-          variant="filled"
-        />
-      ),
-      enableSorting: true,
-      meta: {
-        responsive: {
-          xs: true,  // Show on mobile
           sm: true,  // Show on small screens
           md: true   // Show on medium+ screens
         }
@@ -292,18 +251,16 @@ const DataTable = ({ user }) => {
   // Filter columns based on screen size for responsive behavior
   const visibleColumns = useMemo(() => {
     if (isMobile) {
-      // Mobile: User, Status, Actions
+      // Mobile: User, Actions
       return columns.filter(col =>
         col.accessorKey === 'name' ||
-        col.accessorKey === 'status' ||
         col.id === 'actions'
       );
     } else if (isTablet) {
-      // Tablet: User, Department, Status, Actions
+      // Tablet: User, Last Login, Actions
       return columns.filter(col =>
         col.accessorKey === 'name' ||
-        col.accessorKey === 'department' ||
-        col.accessorKey === 'status' ||
+        col.accessorKey === 'lastLogin' ||
         col.id === 'actions'
       );
     } else {
@@ -660,16 +617,7 @@ const DataTable = ({ user }) => {
         className="edit-modal"
       >
         <DialogTitle>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6" fontWeight="700">
-              Edit User
-            </Typography>
-            <Chip
-              label={selectedRow?.status || 'Active'}
-              color={selectedRow?.status === 'Active' ? 'success' : 'error'}
-              size="small"
-            />
-          </Box>
+          Edit User
         </DialogTitle>
         <DialogContent dividers>
           {selectedRow && (
@@ -697,30 +645,6 @@ const DataTable = ({ user }) => {
                   variant="outlined"
                 />
               </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Department"
-                  value={editFormData.department}
-                  onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
-                  variant="outlined"
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Status"
-                  value={editFormData.status}
-                  onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
-                >
-                  {['Active', 'Inactive'].map((status) => (
-                    <MenuItem key={status} value={status}>{status}</MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
             </Grid>
           )}
         </DialogContent>
@@ -743,16 +667,7 @@ const DataTable = ({ user }) => {
         className="detail-modal"
       >
         <DialogTitle>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6" fontWeight="700">
-              User Details
-            </Typography>
-            <Chip
-              label={selectedRow?.status || ''}
-              color={selectedRow?.status === 'Active' ? 'success' : 'error'}
-              size="small"
-            />
-          </Box>
+          User Details
         </DialogTitle>
         <DialogContent dividers>
           {selectedRow && (
@@ -769,12 +684,6 @@ const DataTable = ({ user }) => {
                 <Typography variant="body2" color="text.secondary">
                   {selectedRow.email}
                 </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" fontWeight="600" gutterBottom>
-                  Department
-                </Typography>
-                <Typography variant="body2">{selectedRow.department}</Typography>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="subtitle2" fontWeight="600" gutterBottom>

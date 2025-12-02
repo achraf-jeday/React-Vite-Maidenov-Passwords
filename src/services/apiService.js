@@ -61,6 +61,20 @@ class ApiService {
   }
 
   /**
+   * Make a PATCH request
+   */
+  async patch(endpoint, data, options = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    const response = await createAuthenticatedRequest(url, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+      ...options
+    });
+
+    return this.handleResponse(response);
+  }
+
+  /**
    * Make a DELETE request
    */
   async delete(endpoint, options = {}) {

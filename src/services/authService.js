@@ -154,7 +154,7 @@ export const getUserInfo = async () => {
     throw new Error('No access token available');
   }
 
-  const response = await fetch(`/oauth/userinfo`, {
+  const response = await fetch(`${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.userInfo}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -185,17 +185,16 @@ export const revokeTokens = async () => {
   const params = new URLSearchParams({
     token: accessToken,
     token_type_hint: 'access_token',
-    client_id: OAUTH_CONFIG.OAUTH_CONFIG.CLIENT_ID,
-    client_secret: OAUTH_CONFIG.OAUTH_CONFIG.CLIENT_SECRET
+    client_id: OAUTH_CONFIG.CLIENT_ID,
+    client_secret: OAUTH_CONFIG.CLIENT_SECRET
   });
 
   try {
-    const response = await fetch(`/oauth/revoke`, {
+    const response = await fetch(`${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.revoke}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${accessToken}`
+        'Accept': 'application/json'
       },
       body: params
     });
@@ -271,6 +270,41 @@ export const logoutFromDrupal = async () => {
     console.error('Logout error:', error);
     // Continue with local logout even if revoke fails
   }
+};
+
+/**
+ * Check if token needs refresh (within 2 minutes of expiry)
+ */
+export const shouldRefreshToken = () => {
+  const expiresAt = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT);
+  const refreshToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
+
+  if (!expiresAt || !refreshToken) {
+    return false;
+  }
+
+  const expiryTime = parseInt(expiresAt, 10);
+  const currentTime = Date.now();
+  const timeUntilExpiry = expiryTime - currentTime;
+
+  // Refresh if less than 2 minutes (120000ms) until expiry
+  return timeUntilExpiry < 120000;
+};
+
+/**
+ * Ensure token is fresh before making API request
+ */
+export const ensureFreshToken = async () => {
+  if (shouldRefreshToken()) {
+    try {
+      await refreshAccessToken();
+      return true;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      return false;
+    }
+  }
+  return true;
 };
 
 /**

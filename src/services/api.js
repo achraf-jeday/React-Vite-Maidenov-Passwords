@@ -1,8 +1,11 @@
 // Real API service for Drupal 11 JSON:API integration
-import { refreshAccessToken } from './authService';
+import { refreshAccessToken, ensureFreshToken } from './authService';
 
 export const api = {
   async getUsers(page = 1, pageSize = 10, search = '', sortBy = [{ id: 'id', desc: false }]) {
+    // Ensure token is fresh before making request
+    await ensureFreshToken();
+
     const token = localStorage.getItem('maidenov_access_token');
 
     // API limits to 50 records max per request
@@ -103,8 +106,7 @@ export const api = {
                 const users = data.data.map(item => ({
                   id: item.id,
                   name: item.attributes.name,
-                  status: item.attributes.status ? 'Active' : 'Inactive',
-                  department: item.attributes.department || 'General',
+                  email: item.attributes.email,
                   lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
                   created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
                   changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
@@ -133,8 +135,7 @@ export const api = {
                 const users = data.data.map(item => ({
                   id: item.id,
                   name: item.attributes.name,
-                  status: item.attributes.status ? 'Active' : 'Inactive',
-                  department: item.attributes.department || 'General',
+                  email: item.attributes.email,
                   lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
                   created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
                   changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
@@ -245,6 +246,9 @@ export const api = {
   },
 
   async deleteUser(id) {
+    // Ensure token is fresh before making request
+    await ensureFreshToken();
+
     const token = localStorage.getItem('maidenov_access_token');
 
     const response = await fetch(
@@ -296,6 +300,9 @@ export const api = {
   },
 
   async updateUser(id, data) {
+    // Ensure token is fresh before making request
+    await ensureFreshToken();
+
     const token = localStorage.getItem('maidenov_access_token');
 
     const requestBody = {
@@ -304,8 +311,10 @@ export const api = {
         id: id,
         attributes: {
           name: data.name,
-          status: data.status === 'Active',
-          department: data.department
+          link: data.link || '',
+          username: data.username || '',
+          password: data.password || '',
+          notes: data.notes || ''
         }
       }
     };
@@ -354,8 +363,7 @@ export const api = {
               data: {
                 id: result.data.id,
                 name: result.data.attributes.name,
-                status: result.data.attributes.status ? 'Active' : 'Inactive',
-                department: result.data.attributes.department,
+                email: result.data.attributes.email,
                 lastLogin: result.data.attributes.last_login ? new Date(result.data.attributes.last_login).toLocaleDateString() : 'Never',
                 created: result.data.attributes.created ? new Date(result.data.attributes.created).toLocaleDateString() : 'Unknown',
                 changed: result.data.attributes.changed ? new Date(result.data.attributes.changed).toLocaleDateString() : 'Unknown'
