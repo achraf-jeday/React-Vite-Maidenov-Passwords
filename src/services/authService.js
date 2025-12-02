@@ -109,12 +109,12 @@ export const refreshAccessToken = async () => {
 
   const params = new URLSearchParams({
     grant_type: 'refresh_token',
-    client_id: OAUTH_CONFIG.OAUTH_CONFIG.CLIENT_ID,
-    client_secret: OAUTH_CONFIG.OAUTH_CONFIG.CLIENT_SECRET,
+    client_id: OAUTH_CONFIG.CLIENT_ID,
+    client_secret: OAUTH_CONFIG.CLIENT_SECRET,
     refresh_token: refreshToken
   });
 
-  const response = await fetch(`http://localhost:8080/oauth/token`, {
+  const response = await fetch(`${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.token}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -123,10 +123,31 @@ export const refreshAccessToken = async () => {
     body: params
   });
 
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch (parseError) {
+    throw new Error('Failed to parse OAuth response: ' + parseError.message);
+  }
 
   if (!response.ok) {
-    throw new Error(data.error || 'Failed to refresh token');
+    console.error('Token refresh failed:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: data.error,
+      error_description: data.error_description
+    });
+
+    // If refresh token is invalid/expired, clear tokens and redirect to login
+    if (response.status === 400 && (data.error === 'invalid_grant' || data.error === 'invalid_request')) {
+      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
+      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT);
+      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.USER_INFO);
+      throw new Error('Session expired. Please log in again.');
+    }
+
+    throw new Error(data.error || data.error_description || 'Failed to refresh token');
   }
 
   // Store new tokens
@@ -295,6 +316,13 @@ export const shouldRefreshToken = () => {
  * Ensure token is fresh before making API request
  */
 export const ensureFreshToken = async () => {
+  const accessToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+
+  // If no access token, can't refresh
+  if (!accessToken) {
+    return false;
+  }
+
   if (shouldRefreshToken()) {
     try {
       await refreshAccessToken();
@@ -309,11 +337,12 @@ export const ensureFreshToken = async () => {
 
 /**
  * Create authenticated API request with access token
+ * Automatically refreshes token if 401 Unauthorized is received
  */
-export const createAuthenticatedRequest = (url, options = {}) => {
+export const createAuthenticatedRequest = async (url, options = {}) => {
   const accessToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
 
-  return fetch(url, {
+  const request = fetch(url, {
     ...options,
     headers: {
       ...options.headers,
@@ -322,4 +351,34 @@ export const createAuthenticatedRequest = (url, options = {}) => {
       'Content-Type': 'application/json'
     }
   });
+
+  // Handle automatic token refresh on 401 errors
+  const response = await request;
+
+  if (response.status === 401) {
+    try {
+      // Try to refresh the token
+      await refreshAccessToken();
+      console.log('Token refreshed automatically');
+
+      // Retry the original request with new token
+      const newAccessToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+
+      return fetch(url, {
+        ...options,
+        headers: {
+          ...options.headers,
+          'Authorization': newAccessToken ? `Bearer ${newAccessToken}` : '',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (refreshError) {
+      console.error('Automatic token refresh failed:', refreshError);
+      // Token refresh failed, return the original 401 response
+      return response;
+    }
+  }
+
+  return response;
 };
