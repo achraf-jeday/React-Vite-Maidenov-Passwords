@@ -107,6 +107,10 @@ export const api = {
                   id: item.id,
                   name: item.attributes.name,
                   email: item.attributes.email,
+                  username: item.attributes.username,
+                  password: item.attributes.password,
+                  link: item.attributes.link,
+                  notes: item.attributes.notes,
                   lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
                   created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
                   changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
@@ -136,6 +140,10 @@ export const api = {
                   id: item.id,
                   name: item.attributes.name,
                   email: item.attributes.email,
+                  username: item.attributes.username,
+                  password: item.attributes.password,
+                  link: item.attributes.link,
+                  notes: item.attributes.notes,
                   lastLogin: item.attributes.last_login ? new Date(item.attributes.last_login).toLocaleDateString() : 'Never',
                   created: item.attributes.created ? new Date(item.attributes.created).toLocaleDateString() : 'Unknown',
                   changed: item.attributes.changed ? new Date(item.attributes.changed).toLocaleDateString() : 'Unknown',
@@ -186,6 +194,11 @@ export const api = {
           const users = data.data.map(item => ({
             id: item.id,
             name: item.attributes.name,
+            email: item.attributes.email,
+            username: item.attributes.username,
+            password: item.attributes.password,
+            link: item.attributes.link,
+            notes: item.attributes.notes,
             role: item.attributes.role || 'User',
             status: item.attributes.status ? 'Active' : 'Inactive',
             department: item.attributes.department || 'General',
@@ -219,6 +232,11 @@ export const api = {
           const users = data.data.map(item => ({
             id: item.id,
             name: item.attributes.name,
+            email: item.attributes.email,
+            username: item.attributes.username,
+            password: item.attributes.password,
+            link: item.attributes.link,
+            notes: item.attributes.notes,
             role: item.attributes.role || 'User',
             status: item.attributes.status ? 'Active' : 'Inactive',
             department: item.attributes.department || 'General',
@@ -311,7 +329,11 @@ export const api = {
         id: id,
         attributes: {
           name: data.name,
-          link: data.link || '',
+          link: data.link ? {
+            uri: data.link,
+            title: '', // Optional title
+            options: {} // Default options
+          } : null,
           username: data.username || '',
           password: data.password || '',
           notes: data.notes || ''
@@ -364,6 +386,10 @@ export const api = {
                 id: result.data.id,
                 name: result.data.attributes.name,
                 email: result.data.attributes.email,
+                username: result.data.attributes.username,
+                password: result.data.attributes.password,
+                link: result.data.attributes.link,
+                notes: result.data.attributes.notes,
                 lastLogin: result.data.attributes.last_login ? new Date(result.data.attributes.last_login).toLocaleDateString() : 'Never',
                 created: result.data.attributes.created ? new Date(result.data.attributes.created).toLocaleDateString() : 'Unknown',
                 changed: result.data.attributes.changed ? new Date(result.data.attributes.changed).toLocaleDateString() : 'Unknown'
@@ -387,6 +413,11 @@ export const api = {
       data: {
         id: result.data.id,
         name: result.data.attributes.name,
+        email: result.data.attributes.email,
+        username: result.data.attributes.username,
+        password: result.data.attributes.password,
+        link: result.data.attributes.link,
+        notes: result.data.attributes.notes,
         role: result.data.attributes.role,
         status: result.data.attributes.status ? 'Active' : 'Inactive',
         department: result.data.attributes.department,

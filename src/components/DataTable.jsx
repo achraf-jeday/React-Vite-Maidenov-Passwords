@@ -102,13 +102,24 @@ const DataTable = ({ user }) => {
   // Edit modal state
   const [editOpen, setEditOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
-    name: ''
+    name: '',
+    email: '',
+    username: '',
+    password: '',
+    link: '',
+    notes: ''
   });
 
   const handleEditClick = (row) => {
     setSelectedRow(row.original);
     setEditFormData({
-      name: row.original.name || ''
+      id: row.original.id,
+      name: row.original.name || '',
+      email: row.original.email || '',
+      username: row.original.username || '',
+      password: row.original.password || '',
+      link: typeof row.original.link === 'object' && row.original.link !== null ? row.original.link.uri || '' : row.original.link || '',
+      notes: row.original.notes || ''
     });
     setEditOpen(true);
   };
@@ -612,29 +623,31 @@ const DataTable = ({ user }) => {
       <Dialog
         open={editOpen}
         onClose={handleEditClose}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
         className="edit-modal"
+        PaperProps={{
+          sx: {
+            minWidth: { xs: '90vw', sm: '80vw', md: '60vw', lg: '50vw' },
+            minHeight: { xs: '80vh', sm: '70vh', md: '60vh' },
+            maxHeight: { xs: '90vh', sm: '80vh', md: '70vh' }
+          }
+        }}
       >
         <DialogTitle>
           Edit User
         </DialogTitle>
         <DialogContent dividers>
           {selectedRow && (
-            <Grid container spacing={3}>
-              <Grid item xs={12} display="flex" justifyContent="center">
-                <Avatar src={selectedRow.avatar} alt={selectedRow.name} sx={{ width: 80, height: 80 }}>
-                  {selectedRow.name.charAt(0)}
-                </Avatar>
-              </Grid>
-              <Grid item xs={12} textAlign="center">
-                <Typography variant="h6" fontWeight="600">
-                  {selectedRow.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {selectedRow.email}
-                </Typography>
-              </Grid>
+            <Grid
+              container
+              spacing={3}
+              sx={{
+                width: '100%',
+                maxWidth: '100%',
+                flexDirection: 'column'
+              }}
+            >
 
               <Grid item xs={12}>
                 <TextField
@@ -643,6 +656,96 @@ const DataTable = ({ user }) => {
                   value={editFormData.name}
                   onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
                   variant="outlined"
+                  sx={{
+                    width: '100%',
+                    '& .MuiInputBase-root': {
+                      width: '100%'
+                    }
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  variant="outlined"
+                  sx={{
+                    width: '100%',
+                    '& .MuiInputBase-root': {
+                      width: '100%'
+                    }
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Username"
+                  value={editFormData.username}
+                  onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })}
+                  variant="outlined"
+                  sx={{
+                    width: '100%',
+                    '& .MuiInputBase-root': {
+                      width: '100%'
+                    }
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type="password"
+                  value={editFormData.password}
+                  onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
+                  variant="outlined"
+                  sx={{
+                    width: '100%',
+                    '& .MuiInputBase-root': {
+                      width: '100%'
+                    }
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Link"
+                  value={typeof editFormData.link === 'object' && editFormData.link !== null ? editFormData.link.uri || '' : editFormData.link || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, link: e.target.value })}
+                  variant="outlined"
+                  sx={{
+                    width: '100%',
+                    '& .MuiInputBase-root': {
+                      width: '100%'
+                    }
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Notes"
+                  multiline
+                  rows={4}
+                  value={editFormData.notes}
+                  onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
+                  variant="outlined"
+                  sx={{
+                    width: '100%',
+                    '& .MuiInputBase-root': {
+                      width: '100%'
+                    }
+                  }}
                 />
               </Grid>
             </Grid>
@@ -672,11 +775,6 @@ const DataTable = ({ user }) => {
         <DialogContent dividers>
           {selectedRow && (
             <Grid container spacing={3}>
-              <Grid item xs={12} display="flex" justifyContent="center">
-                <Avatar src={selectedRow.avatar} alt={selectedRow.name} sx={{ width: 80, height: 80 }}>
-                  {selectedRow.name.charAt(0)}
-                </Avatar>
-              </Grid>
               <Grid item xs={12} textAlign="center">
                 <Typography variant="h6" fontWeight="600">
                   {selectedRow.name}
