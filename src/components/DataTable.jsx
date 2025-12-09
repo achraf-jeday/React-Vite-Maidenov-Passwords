@@ -615,7 +615,7 @@ const DataTable = ({ user }) => {
           }}
         />
         <Typography variant="body2" color="text.secondary">
-          {totalCount} total
+          Showing {Math.min((page - 1) * pageSize + 1, totalCount)} - {Math.min(page * pageSize, totalCount)} of {totalCount.toLocaleString()}
         </Typography>
       </Box>
 

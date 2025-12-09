@@ -209,7 +209,7 @@ export const api = {
           }));
 
           allData.push(...users);
-          totalRecords = data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length;
+          totalRecords = data.meta?.count || data.data?.length || 0;
         }
       } catch (error) {
         // If fetch fails completely, try without authentication
@@ -247,7 +247,7 @@ export const api = {
           }));
 
           allData.push(...users);
-          totalRecords = data.meta?.count || Object.keys(data.meta?.omitted?.links || {}).length;
+          totalRecords = data.meta?.count || data.data?.length || 0;
         } else {
           throw error;
         }
@@ -255,10 +255,13 @@ export const api = {
     }
 
     // Return only the number of records requested by pageSize
+    // For filtered results, use the actual number of records returned
+    const actualCount = search ? allData.length : totalRecords;
+
     return {
       data: allData.slice(0, pageSize),
-      total: totalRecords,
-      totalPages: Math.ceil(totalRecords / pageSize),
+      total: actualCount,
+      totalPages: Math.ceil(actualCount / pageSize),
       currentPage: page
     };
   },
