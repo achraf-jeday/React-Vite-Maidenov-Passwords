@@ -49,6 +49,7 @@ function AppLayout() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          overflow: 'hidden',
           ...(isLoginPage ? {
             // Full-screen for login
             width: '100%',
@@ -62,7 +63,7 @@ function AppLayout() {
             px: { xs: 2, sm: 3, md: 4, lg: 6 },
             mt: 0,
             width: '100%',
-            maxWidth: '100vw',
+            maxWidth: '100%',
             boxSizing: 'border-box'
           })
         }}
