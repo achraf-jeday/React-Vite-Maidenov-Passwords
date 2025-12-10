@@ -70,7 +70,8 @@ const LoginForm = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      height: '100%'
+      height: '100%',
+      boxSizing: 'border-box'
     }}>
       <div className="login-box" style={{
         background: 'white',

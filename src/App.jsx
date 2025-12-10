@@ -45,13 +45,14 @@ function AppLayout() {
         component="main"
         sx={{
           flexGrow: 1,
+          // Always center content for login form consistency
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           ...(isLoginPage ? {
             // Full-screen for login
             width: '100%',
             height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             margin: 0,
             padding: 0,
             backgroundColor: '#f5f5f5'
