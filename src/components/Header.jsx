@@ -147,8 +147,7 @@ const Header = ({ onDrawerToggle }) => {
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  transform: 'translateY(-1px)'
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)'
                 }
               }}
             >
@@ -165,8 +164,7 @@ const Header = ({ onDrawerToggle }) => {
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  transform: 'translateY(-1px)'
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)'
                 }
               }}
             >
@@ -183,8 +181,7 @@ const Header = ({ onDrawerToggle }) => {
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  transform: 'translateY(-1px)'
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)'
                 }
               }}
             >
@@ -210,8 +207,7 @@ const Header = ({ onDrawerToggle }) => {
                 border: '1px solid rgba(255, 255, 255, 0.2)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  transform: 'translateY(-1px)'
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)'
                 }
               }}
             >

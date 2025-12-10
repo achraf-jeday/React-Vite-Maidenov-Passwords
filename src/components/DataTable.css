@@ -28,9 +28,9 @@
 }
 
 @keyframes float {
-  0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-  100% { transform: translateY(0px) rotate(360deg); }
+  0% { transform: translateX(0px) rotate(0deg); }
+  50% { transform: translateX(-20px) rotate(180deg); }
+  100% { transform: translateX(0px) rotate(360deg); }
 }
 
 .gradient-text {
@@ -58,7 +58,6 @@
 }
 
 .fancy-button:hover {
-  transform: translateY(-2px);
   boxShadow: 0 12px 40px rgba(102, 126, 234, 0.4);
   background: linear-gradient(135deg, #f0f0f0 0%, #fff 100%);
 }
@@ -73,7 +72,6 @@
 
 .refresh-button:hover {
   background: rgba(255, 255, 255, 0.3);
-  transform: rotate(180deg);
 }
 
 .datatable-paper {
@@ -127,7 +125,6 @@
 
 .table-row:hover {
   backgroundColor: #f8fafc !important;
-  transform: translateX(4px);
   boxShadow: inset 4px 0 0 #667eea;
 }
 
@@ -223,11 +220,9 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -241,7 +236,7 @@
 }
 
 .MuiPaper-root:hover {
-  transform: translateY(-2px);
+  /* Removed hover transform to prevent movement */
 }
 
 /* Focus states for accessibility */
