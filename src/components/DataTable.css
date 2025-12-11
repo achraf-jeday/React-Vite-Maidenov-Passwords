@@ -147,6 +147,45 @@
   padding: 16px;
   backgroundColor: #f8fafc;
   borderTop: 1px solid #e2e8f0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 768px) {
+  .pagination-container {
+    padding: 12px 8px;
+    gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Stack elements on mobile */
+  .pagination-container > * {
+    width: 100%;
+  }
+
+  /* Pagination buttons container */
+  .pagination-container .MuiPagination-root {
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* Text elements */
+  .pagination-container .MuiTypography-root {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pagination-container {
+    padding: 10px 6px;
+    gap: 6px;
+  }
 }
 
 .pagination {
@@ -211,8 +250,48 @@
     fontSize: 13px;
   }
 
-  .pagination-container {
-    padding: 12px;
+  /* Responsive pagination styles */
+  .pagination .MuiPaginationItem-root {
+    min-width: 28px;
+    height: 28px;
+    font-size: 11px;
+    margin: 0 1px;
+  }
+
+  .pagination .MuiPaginationItem-ellipsis {
+    min-width: 20px;
+    height: 20px;
+    font-size: 12px;
+  }
+
+  .pagination .MuiTablePagination-selectLabel,
+  .pagination .MuiTablePagination-displayedRows {
+    font-size: 11px;
+  }
+
+  .pagination .MuiInputBase-root {
+    font-size: 11px;
+    min-height: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screen pagination styles */
+  .pagination .MuiPaginationItem-root {
+    min-width: 24px;
+    height: 24px;
+    font-size: 10px;
+    margin: 0 1px;
+  }
+
+  .pagination .MuiTablePagination-selectLabel,
+  .pagination .MuiTablePagination-displayedRows {
+    font-size: 10px;
+  }
+
+  .pagination .MuiInputBase-root {
+    font-size: 10px;
+    min-height: 24px;
   }
 }
 

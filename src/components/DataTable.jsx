@@ -586,6 +586,19 @@ const DataTable = ({ user }) => {
             ))}
           </TextField>
         </Box>
+      </Box>
+
+      {/* Dedicated pagination section - takes full width */}
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        gap={2}
+        width="100%"
+        sx={{
+          padding: { xs: '8px 0', sm: '12px 0' }
+        }}
+      >
         <Pagination
           count={Math.ceil(totalCount / pageSize)}
           page={page}
@@ -593,14 +606,24 @@ const DataTable = ({ user }) => {
           color="primary"
           variant="outlined"
           shape="rounded"
-          siblingCount={1}
-          boundaryCount={1}
+          siblingCount={{ xs: 0, sm: 1 }}
+          boundaryCount={{ xs: 0, sm: 1 }}
+          showFirstButton={{ xs: false, sm: true }}
+          showLastButton={{ xs: false, sm: true }}
           sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'nowrap',
+            width: '100%',
             '& .MuiPaginationItem-root': {
               borderRadius: '8px',
-              margin: '0 2px',
+              margin: { xs: '0 1px', sm: '0 2px' },
               borderColor: 'rgba(102, 126, 234, 0.5)',
               color: '#667eea',
+              minWidth: { xs: 24, sm: 32 },
+              height: { xs: 24, sm: 32 },
+              fontSize: { xs: 10, sm: 12 },
               '&.Mui-selected': {
                 backgroundColor: '#667eea',
                 color: 'white',
@@ -611,6 +634,11 @@ const DataTable = ({ user }) => {
               '&:hover': {
                 backgroundColor: 'rgba(102, 126, 234, 0.1)',
               }
+            },
+            '& .MuiPaginationItem-ellipsis': {
+              minWidth: { xs: 16, sm: 20 },
+              height: { xs: 16, sm: 20 },
+              fontSize: { xs: 10, sm: 12 }
             }
           }}
         />
