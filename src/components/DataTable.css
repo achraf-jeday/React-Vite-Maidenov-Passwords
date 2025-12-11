@@ -349,3 +349,8 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Edit dialog styles */
+.edit-left-column .MuiGrid-root {
+  width: 100% !important;
+}

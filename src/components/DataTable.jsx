@@ -737,118 +737,84 @@ const DataTable = ({ user }) => {
         <DialogTitle>
           Edit <i>{selectedRow?.name || 'Entry'}</i>
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent dividers sx={{ width: '100%' }}>
           {selectedRow && (
-            <Grid
-              container
-              spacing={3}
-              sx={{
-                width: '100%',
-                maxWidth: '100%',
-                flexDirection: 'column'
-              }}
-            >
+            <Box sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: 3,
+              width: '100%'
+            }}>
+              {/* Left Column - All fields except Notes */}
+              <Box className="edit-left-column">
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Name"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      variant="outlined"
+                    />
+                  </Grid>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Name"
-                  value={editFormData.name}
-                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                  variant="outlined"
-                  sx={{
-                    width: '100%',
-                    '& .MuiInputBase-root': {
-                      width: '100%'
-                    }
-                  }}
-                />
-              </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Email"
+                      type="email"
+                      value={editFormData.email}
+                      onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                      variant="outlined"
+                    />
+                  </Grid>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  type="email"
-                  value={editFormData.email}
-                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                  variant="outlined"
-                  sx={{
-                    width: '100%',
-                    '& .MuiInputBase-root': {
-                      width: '100%'
-                    }
-                  }}
-                />
-              </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Username"
+                      value={editFormData.username}
+                      onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })}
+                      variant="outlined"
+                    />
+                  </Grid>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Username"
-                  value={editFormData.username}
-                  onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })}
-                  variant="outlined"
-                  sx={{
-                    width: '100%',
-                    '& .MuiInputBase-root': {
-                      width: '100%'
-                    }
-                  }}
-                />
-              </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Password"
+                      type="password"
+                      value={editFormData.password}
+                      onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
+                      variant="outlined"
+                    />
+                  </Grid>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Password"
-                  type="password"
-                  value={editFormData.password}
-                  onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
-                  variant="outlined"
-                  sx={{
-                    width: '100%',
-                    '& .MuiInputBase-root': {
-                      width: '100%'
-                    }
-                  }}
-                />
-              </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Link"
+                      value={typeof editFormData.link === 'object' && editFormData.link !== null ? editFormData.link.uri || '' : editFormData.link || ''}
+                      onChange={(e) => setEditFormData({ ...editFormData, link: e.target.value })}
+                      variant="outlined"
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Link"
-                  value={typeof editFormData.link === 'object' && editFormData.link !== null ? editFormData.link.uri || '' : editFormData.link || ''}
-                  onChange={(e) => setEditFormData({ ...editFormData, link: e.target.value })}
-                  variant="outlined"
-                  sx={{
-                    width: '100%',
-                    '& .MuiInputBase-root': {
-                      width: '100%'
-                    }
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
+              {/* Right Column - Notes field only */}
+              <Box>
                 <TextField
                   fullWidth
                   label="Notes"
                   multiline
-                  rows={4}
+                  rows={12}
                   value={editFormData.notes}
                   onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
                   variant="outlined"
-                  sx={{
-                    width: '100%',
-                    '& .MuiInputBase-root': {
-                      width: '100%'
-                    }
-                  }}
                 />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           )}
         </DialogContent>
         <DialogActions>
