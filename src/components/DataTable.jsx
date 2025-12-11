@@ -38,7 +38,6 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
   Refresh as RefreshIcon,
   Logout as LogoutIcon,
   Person as PersonIcon
@@ -56,7 +55,6 @@ const DataTable = ({ user }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
-  const [detailOpen, setDetailOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState([{ id: 'name', desc: false }]);
@@ -159,7 +157,7 @@ const DataTable = ({ user }) => {
       }
     },
     {
-      header: 'User',
+      header: 'Pack name',
       accessorKey: 'name',
       cell: ({ row }) => (
         <Box display="flex" alignItems="center" gap={2}>
@@ -208,20 +206,6 @@ const DataTable = ({ user }) => {
       id: 'actions',
       cell: ({ row }) => (
         <Box display="flex" gap={1}>
-          <Tooltip title="View Details">
-            <span>
-              <IconButton
-                size="small"
-                onClick={() => {
-                  setSelectedRow(row.original);
-                  setDetailOpen(true);
-                }}
-                color="primary"
-              >
-                <VisibilityIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
           <Tooltip title="Edit">
             <span>
               <IconButton
@@ -366,10 +350,10 @@ const DataTable = ({ user }) => {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Box>
             <Typography variant="h6" fontWeight="700" sx={{ letterSpacing: '0.5px' }}>
-              Current Users
+              Search Packs
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-              {searchTerm ? `Filtered by: "${searchTerm}"` : 'Filtered users from total'}
+              {searchTerm ? `Filtered by: "${searchTerm}"` : 'Filtered packs from total'}
             </Typography>
           </Box>
           <Tooltip title="Refresh Data">
@@ -398,7 +382,7 @@ const DataTable = ({ user }) => {
         <Box mb={3}>
           <TextField
             fullWidth
-            placeholder="Search users by name, email, or role..."
+            placeholder="Search packs by name..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -827,63 +811,6 @@ const DataTable = ({ user }) => {
         </DialogActions>
       </Dialog>
 
-      {/* Detail Modal */}
-      <Dialog
-        open={detailOpen}
-        onClose={() => setDetailOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        className="detail-modal"
-      >
-        <DialogTitle>
-          User Details
-        </DialogTitle>
-        <DialogContent dividers>
-          {selectedRow && (
-            <Grid container spacing={3}>
-              <Grid item xs={12} textAlign="center">
-                <Typography variant="h6" fontWeight="600">
-                  {selectedRow.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {selectedRow.email}
-                </Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="subtitle2" fontWeight="600" gutterBottom>
-                  Last Login
-                </Typography>
-                <Typography variant="body2">{selectedRow.lastLogin}</Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="subtitle2" fontWeight="600" gutterBottom>
-                  Created
-                </Typography>
-                <Typography variant="body2">{selectedRow.createdAt}</Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" fontWeight="600" gutterBottom>
-                  Permissions
-                </Typography>
-                <Box display="flex" flexWrap="wrap" gap={1}>
-                  {selectedRow.permissions?.map((perm, index) => (
-                    <Chip key={index} label={perm} size="small" variant="outlined" />
-                  ))}
-                </Box>
-              </Grid>
-            </Grid>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDetailOpen(false)} variant="outlined">
-            Close
-          </Button>
-          <Button onClick={() => toast.info('Edit functionality would open here')} variant="contained" color="primary">
-            Edit User
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {/* Delete Confirmation Modal */}
       <Dialog
         open={deleteConfirmOpen}
@@ -897,7 +824,7 @@ const DataTable = ({ user }) => {
               <DeleteIcon />
             </Avatar>
             <Typography variant="h6" fontWeight="700">
-              Delete User
+              Delete Pack
             </Typography>
           </Box>
         </DialogTitle>
