@@ -332,11 +332,7 @@ export const api = {
         id: id,
         attributes: {
           name: data.name,
-          link: data.link ? {
-            uri: data.link,
-            title: '', // Optional title
-            options: {} // Default options
-          } : null,
+          link: data.link || null,
           username: data.username || '',
           password: data.password || '',
           notes: data.notes || ''
