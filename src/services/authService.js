@@ -67,7 +67,7 @@ export const exchangeCodeForTokens = async (authorizationCode) => {
     code_verifier: codeVerifier
   });
 
-  const response = await fetch(`http://localhost:8080/oauth/token`, {
+  const response = await fetch(`${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.token}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',

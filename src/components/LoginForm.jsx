@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { authenticateWithDrupal } from '../services/authService';
+import OAUTH_CONFIG from '../config/oauth';
 
 /**
  * Login Form Component
@@ -21,17 +22,16 @@ const LoginForm = () => {
 
     try {
       // Authenticate directly with Drupal using ROPC flow
-      // Use proxy to avoid CORS issues
       const params = new URLSearchParams({
         grant_type: 'password',
-        client_id: 'test-frontend',
-        client_secret: 'test-secret-key-12345',
+        client_id: OAUTH_CONFIG.CLIENT_ID,
+        client_secret: OAUTH_CONFIG.CLIENT_SECRET,
         username: username,
         password: password,
-        scope: 'basic'
+        scope: OAUTH_CONFIG.OAUTH_CONFIG.scope
       });
 
-      const response = await fetch('/oauth/token', {
+      const response = await fetch(`${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.token}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -44,11 +44,11 @@ const LoginForm = () => {
 
       if (response.ok) {
         // Store tokens
-        localStorage.setItem('maidenov_access_token', data.access_token);
-        localStorage.setItem('maidenov_refresh_token', data.refresh_token);
+        localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
+        localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token);
         if (data.expires_in) {
           const expiresAt = Date.now() + (data.expires_in * 1000);
-          localStorage.setItem('maidenov_token_expires_at', expiresAt.toString());
+          localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
         }
 
         // Redirect to dashboard
