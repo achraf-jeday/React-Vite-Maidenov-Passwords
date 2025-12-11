@@ -735,7 +735,7 @@ const DataTable = ({ user }) => {
         }}
       >
         <DialogTitle>
-          Edit User
+          Edit <i>{selectedRow?.name || 'Entry'}</i>
         </DialogTitle>
         <DialogContent dividers>
           {selectedRow && (
