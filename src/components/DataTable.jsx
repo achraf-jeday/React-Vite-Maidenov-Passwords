@@ -767,7 +767,6 @@ const DataTable = ({ user }) => {
                     <TextField
                       fullWidth
                       label="Password"
-                      type="password"
                       value={editFormData.password}
                       onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
                       variant="outlined"
