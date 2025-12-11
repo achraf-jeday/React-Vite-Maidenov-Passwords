@@ -553,7 +553,18 @@ const DataTable = ({ user }) => {
       </Paper>
 
       {/* Pagination */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mt: 2, px: 2 }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{
+          mt: 2,
+          px: 2,
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: { xs: 2, md: 0 }
+        }}
+      >
+        {/* Left section: Rows per page */}
         <Box display="flex" alignItems="center" gap={2}>
           <Typography variant="body2" color="text.secondary">
             Rows per page:
@@ -586,65 +597,126 @@ const DataTable = ({ user }) => {
             ))}
           </TextField>
         </Box>
-      </Box>
 
-      {/* Dedicated pagination section - takes full width */}
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        gap={2}
-        width="100%"
-        sx={{
-          padding: { xs: '8px 0', sm: '12px 0' }
-        }}
-      >
-        <Pagination
-          count={Math.ceil(totalCount / pageSize)}
-          page={page}
-          onChange={handlePageChange}
-          color="primary"
-          variant="outlined"
-          shape="rounded"
-          siblingCount={{ xs: 0, sm: 1 }}
-          boundaryCount={{ xs: 0, sm: 1 }}
-          showFirstButton={{ xs: false, sm: true }}
-          showLastButton={{ xs: false, sm: true }}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexWrap: 'nowrap',
-            width: '100%',
-            '& .MuiPaginationItem-root': {
-              borderRadius: '8px',
-              margin: { xs: '0 1px', sm: '0 2px' },
-              borderColor: 'rgba(102, 126, 234, 0.5)',
-              color: '#667eea',
-              minWidth: { xs: 24, sm: 32 },
-              height: { xs: 24, sm: 32 },
-              fontSize: { xs: 10, sm: 12 },
-              '&.Mui-selected': {
-                backgroundColor: '#667eea',
-                color: 'white',
+        {/* Middle section: Desktop Pagination (rich) */}
+        <Box
+          display={{ xs: 'none', md: 'flex' }}
+          alignItems="center"
+          justifyContent="center"
+          width="auto"
+        >
+          <Pagination
+            count={Math.ceil(totalCount / pageSize)}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            variant="outlined"
+            shape="rounded"
+            siblingCount={1}
+            boundaryCount={0}
+            showFirstButton={true}
+            showLastButton={true}
+            showPrevButton={true}
+            showNextButton={true}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              '& .MuiPaginationItem-root': {
+                borderRadius: '8px',
+                margin: '0 2px',
+                borderColor: 'rgba(102, 126, 234, 0.5)',
+                color: '#667eea',
+                minWidth: 40,
+                height: 40,
+                fontSize: 14,
+                fontWeight: 600,
+                padding: '0 12px',
+                '&.Mui-selected': {
+                  backgroundColor: '#667eea',
+                  color: 'white',
+                  fontWeight: 700,
+                  boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
+                  '&:hover': {
+                    backgroundColor: '#764ba2',
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+                  }
+                },
                 '&:hover': {
-                  backgroundColor: '#764ba2',
+                  backgroundColor: 'rgba(102, 126, 234, 0.1)',
                 }
               },
-              '&:hover': {
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+              '& .MuiPaginationItem-ellipsis': {
+                minWidth: 28,
+                height: 28,
+                fontSize: 14
+              },
+              '& .MuiPaginationItem-page': {
+                transition: 'all 0.2s ease',
               }
-            },
-            '& .MuiPaginationItem-ellipsis': {
-              minWidth: { xs: 16, sm: 20 },
-              height: { xs: 16, sm: 20 },
-              fontSize: { xs: 10, sm: 12 }
-            }
-          }}
-        />
-        <Typography variant="body2" color="text.secondary">
-          Showing {Math.min((page - 1) * pageSize + 1, totalCount)} - {Math.min(page * pageSize, totalCount)} of {totalCount.toLocaleString()}
-        </Typography>
+            }}
+          />
+        </Box>
+
+        {/* Middle section: Mobile Pagination (compact) */}
+        <Box
+          display={{ xs: 'flex', md: 'none' }}
+          alignItems="center"
+          justifyContent="center"
+          width="100%"
+        >
+          <Pagination
+            count={Math.ceil(totalCount / pageSize)}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            variant="outlined"
+            shape="rounded"
+            siblingCount={0}
+            boundaryCount={0}
+            showFirstButton={true}
+            showLastButton={true}
+            showPrevButton={true}
+            showNextButton={true}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexWrap: 'nowrap',
+              '& .MuiPaginationItem-root': {
+                borderRadius: '8px',
+                margin: '0 1px',
+                borderColor: 'rgba(102, 126, 234, 0.5)',
+                color: '#667eea',
+                minWidth: 24,
+                height: 24,
+                fontSize: 10,
+                '&.Mui-selected': {
+                  backgroundColor: '#667eea',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: '#764ba2',
+                  }
+                },
+                '&:hover': {
+                  backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                }
+              },
+              '& .MuiPaginationItem-ellipsis': {
+                minWidth: 16,
+                height: 16,
+                fontSize: 10
+              }
+            }}
+          />
+        </Box>
+
+        {/* Right section: Results text */}
+        <Box display="flex" alignItems="center">
+          <Typography variant="body2" color="text.secondary">
+            Showing {Math.min((page - 1) * pageSize + 1, totalCount)} - {Math.min(page * pageSize, totalCount)} of {totalCount.toLocaleString()}
+          </Typography>
+        </Box>
       </Box>
 
       {/* Edit Modal */}
