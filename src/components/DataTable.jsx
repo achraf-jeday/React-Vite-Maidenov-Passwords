@@ -125,6 +125,13 @@ const DataTable = ({ user }) => {
   const handleEditClose = () => {
     setEditOpen(false);
     setSelectedRow(null);
+    // Ensure focus is returned to a safe element
+    setTimeout(() => {
+      const table = document.querySelector('.datatable-container');
+      if (table) {
+        table.focus();
+      }
+    }, 0);
   };
 
   const handleEditSave = async () => {
@@ -320,7 +327,7 @@ const DataTable = ({ user }) => {
   };
 
   return (
-    <Box className="datatable-container">
+    <Box className="datatable-container" tabIndex={-1}>
       <Toaster position="top-right" />
 
       {/* Search Bar - Moved to top without header */}
@@ -600,8 +607,8 @@ const DataTable = ({ user }) => {
             boundaryCount={0}
             showFirstButton={true}
             showLastButton={true}
-            showPrevButton={true}
-            showNextButton={true}
+            hidePrevButton={false}
+            hideNextButton={false}
             sx={{
               display: 'flex',
               alignItems: 'center',
@@ -660,8 +667,8 @@ const DataTable = ({ user }) => {
             boundaryCount={0}
             showFirstButton={true}
             showLastButton={true}
-            showPrevButton={true}
-            showNextButton={true}
+            hidePrevButton={false}
+            hideNextButton={false}
             sx={{
               display: 'flex',
               alignItems: 'center',
@@ -709,6 +716,8 @@ const DataTable = ({ user }) => {
         onClose={handleEditClose}
         maxWidth="md"
         fullWidth
+        keepMounted
+        disableEnforceFocus
         className="edit-modal"
         PaperProps={{
           sx: {
@@ -732,7 +741,7 @@ const DataTable = ({ user }) => {
               {/* Left Column - All fields except Notes */}
               <Box className="edit-left-column">
                 <Grid container spacing={2}>
-                  <Grid item xs={12}>
+                  <Grid grid={12}>
                     <TextField
                       fullWidth
                       label="Name"
@@ -742,7 +751,7 @@ const DataTable = ({ user }) => {
                     />
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid grid={12}>
                     <TextField
                       fullWidth
                       label="Email"
@@ -753,7 +762,7 @@ const DataTable = ({ user }) => {
                     />
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid grid={12}>
                     <TextField
                       fullWidth
                       label="Username"
@@ -763,7 +772,7 @@ const DataTable = ({ user }) => {
                     />
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid grid={12}>
                     <TextField
                       fullWidth
                       label="Password"
@@ -773,7 +782,7 @@ const DataTable = ({ user }) => {
                     />
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid grid={12}>
                     <TextField
                       fullWidth
                       label="Link"
@@ -813,9 +822,20 @@ const DataTable = ({ user }) => {
       {/* Delete Confirmation Modal */}
       <Dialog
         open={deleteConfirmOpen}
-        onClose={() => setDeleteConfirmOpen(false)}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setSelectedRow(null);
+          // Ensure focus is returned to a safe element
+          setTimeout(() => {
+            const table = document.querySelector('.datatable-container');
+            if (table) {
+              table.focus();
+            }
+          }, 0);
+        }}
         maxWidth="xs"
         fullWidth
+        keepMounted
       >
         <DialogTitle>
           <Box display="flex" alignItems="center" gap={2}>

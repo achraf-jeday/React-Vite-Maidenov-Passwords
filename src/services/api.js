@@ -332,6 +332,7 @@ export const api = {
         id: id,
         attributes: {
           name: data.name,
+          email: data.email || '',
           link: data.link || null,
           username: data.username || '',
           password: data.password || '',
