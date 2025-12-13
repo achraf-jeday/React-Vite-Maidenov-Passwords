@@ -2,8 +2,8 @@
 // Replace these values with your actual Drupal OAuth2 configuration
 
 const OAUTH_CONFIG = {
-  // Your Drupal backend URL
-  DRUPAL_BASE_URL: 'http://localhost:8080',
+  // Your Drupal backend URL (empty for relative URLs that go through Vite proxy)
+  DRUPAL_BASE_URL: '',
 
   // OAuth2 endpoints (Simple OAuth module)
   OAUTH_ENDPOINTS: {

@@ -14,6 +14,10 @@ export default defineConfig({
       '/oauth': {
         target: 'http://localhost:8080',
         changeOrigin: true
+      },
+      '/jsonapi': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
       }
     }
   }

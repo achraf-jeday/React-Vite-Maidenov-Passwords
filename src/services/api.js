@@ -74,7 +74,7 @@ export const api = {
 
       try {
         const response = await fetch(
-          `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+          `/jsonapi/user_confidential_data/type_1?${params}`,
           {
             headers
           }
@@ -92,7 +92,7 @@ export const api = {
                 // Retry with the new token
                 headers['Authorization'] = `Bearer ${newToken}`;
                 const retryResponse = await fetch(
-                  `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+                  `/jsonapi/user_confidential_data/type_1?${params}`,
                   {
                     headers
                   }
@@ -125,7 +125,7 @@ export const api = {
                 delete headers['Authorization'];
 
                 const retryResponse = await fetch(
-                  `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+                  `/jsonapi/user_confidential_data/type_1?${params}`,
                   {
                     headers
                   }
@@ -159,7 +159,7 @@ export const api = {
               delete headers['Authorization'];
 
               const retryResponse = await fetch(
-                `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+                `/jsonapi/user_confidential_data/type_1?${params}`,
                 {
                   headers
                 }
@@ -209,7 +209,21 @@ export const api = {
           }));
 
           allData.push(...users);
-          totalRecords = data.meta?.count || data.data?.length || 0;
+
+          // Handle different response structures for totalRecords:
+          // - Searching encrypted fields: meta.count might be an array of IDs
+          // - Normal queries: meta.count is an integer
+          const metaCount = data.meta?.count;
+          if (Array.isArray(metaCount)) {
+            // Encrypted field search returns array of matching IDs
+            totalRecords = metaCount.length;
+          } else if (typeof metaCount === 'number') {
+            // Normal query returns integer count
+            totalRecords = metaCount;
+          } else {
+            // Fallback to data length
+            totalRecords = data.data?.length || 0;
+          }
         }
       } catch (error) {
         // If fetch fails completely, try without authentication
@@ -218,7 +232,7 @@ export const api = {
           delete headers['Authorization'];
 
           const fallbackResponse = await fetch(
-            `http://localhost:8080/jsonapi/user_confidential_data/type_1?${params}`,
+            `/jsonapi/user_confidential_data/type_1?${params}`,
             {
               headers
             }
@@ -247,7 +261,21 @@ export const api = {
           }));
 
           allData.push(...users);
-          totalRecords = data.meta?.count || data.data?.length || 0;
+
+          // Handle different response structures for totalRecords:
+          // - Searching encrypted fields: meta.count might be an array of IDs
+          // - Normal queries: meta.count is an integer
+          const metaCount = data.meta?.count;
+          if (Array.isArray(metaCount)) {
+            // Encrypted field search returns array of matching IDs
+            totalRecords = metaCount.length;
+          } else if (typeof metaCount === 'number') {
+            // Normal query returns integer count
+            totalRecords = metaCount;
+          } else {
+            // Fallback to data length
+            totalRecords = data.data?.length || 0;
+          }
         } else {
           throw error;
         }
@@ -255,13 +283,11 @@ export const api = {
     }
 
     // Return only the number of records requested by pageSize
-    // For filtered results, use the actual number of records returned
-    const actualCount = search ? allData.length : totalRecords;
-
+    // Use totalRecords from API response (includes correct count for searches)
     return {
       data: allData.slice(0, pageSize),
-      total: actualCount,
-      totalPages: Math.ceil(actualCount / pageSize),
+      total: totalRecords,
+      totalPages: Math.ceil(totalRecords / pageSize),
       currentPage: page
     };
   },
@@ -273,7 +299,7 @@ export const api = {
     const token = localStorage.getItem('maidenov_access_token');
 
     const response = await fetch(
-      `http://localhost:8080/jsonapi/user_confidential_data/type_1/${id}`,
+      `/jsonapi/user_confidential_data/type_1/${id}`,
       {
         method: 'DELETE',
         headers: {
@@ -292,7 +318,7 @@ export const api = {
           if (newToken) {
             // Retry with new token
             const retryResponse = await fetch(
-              `http://localhost:8080/jsonapi/user_confidential_data/type_1/${id}`,
+              `/jsonapi/user_confidential_data/type_1/${id}`,
               {
                 method: 'DELETE',
                 headers: {
@@ -342,7 +368,7 @@ export const api = {
     };
 
     const response = await fetch(
-      `http://localhost:8080/jsonapi/user_confidential_data/type_1/${id}`,
+      `/jsonapi/user_confidential_data/type_1/${id}`,
       {
         method: 'PATCH',
         headers: {
@@ -363,7 +389,7 @@ export const api = {
           if (newToken) {
             // Retry with new token
             const retryResponse = await fetch(
-              `http://localhost:8080/jsonapi/user_confidential_data/type_1/${id}`,
+              `/jsonapi/user_confidential_data/type_1/${id}`,
               {
                 method: 'PATCH',
                 headers: {
