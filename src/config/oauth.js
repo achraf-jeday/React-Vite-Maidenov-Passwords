@@ -1,11 +1,11 @@
 // OAuth2 Configuration for Drupal 11 Simple OAuth
-// Replace these values with your actual Drupal OAuth2 configuration
+// All endpoints use relative URLs that go through the Vite dev server proxy
+// (configured in vite.config.js) to avoid CORS issues during development.
+// For production, configure your web server to proxy these requests to the Drupal backend.
 
 const OAUTH_CONFIG = {
-  // Your Drupal backend URL (empty for relative URLs that go through Vite proxy)
-  DRUPAL_BASE_URL: '',
-
   // OAuth2 endpoints (Simple OAuth module)
+  // These are relative URLs that will be proxied to the Drupal backend
   OAUTH_ENDPOINTS: {
     authorize: '/oauth/authorize',
     token: '/oauth/token',

@@ -31,7 +31,7 @@ const LoginForm = () => {
         scope: OAUTH_CONFIG.OAUTH_CONFIG.scope
       });
 
-      const response = await fetch(`${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.token}`, {
+      const response = await fetch(OAUTH_CONFIG.OAUTH_ENDPOINTS.token, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',

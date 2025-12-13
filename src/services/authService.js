@@ -49,7 +49,7 @@ export const buildAuthorizationUrl = async () => {
     code_challenge_method: 'S256'
   });
 
-  return `${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.authorize}?${params.toString()}`;
+  return `${OAUTH_CONFIG.OAUTH_ENDPOINTS.authorize}?${params.toString()}`;
 };
 
 /**
@@ -67,7 +67,7 @@ export const exchangeCodeForTokens = async (authorizationCode) => {
     code_verifier: codeVerifier
   });
 
-  const response = await fetch(`${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.token}`, {
+  const response = await fetch(OAUTH_CONFIG.OAUTH_ENDPOINTS.token, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -114,7 +114,7 @@ export const refreshAccessToken = async () => {
     refresh_token: refreshToken
   });
 
-  const response = await fetch(`${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.token}`, {
+  const response = await fetch(OAUTH_CONFIG.OAUTH_ENDPOINTS.token, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -175,7 +175,7 @@ export const getUserInfo = async () => {
     throw new Error('No access token available');
   }
 
-  const response = await fetch(`${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.userInfo}`, {
+  const response = await fetch(OAUTH_CONFIG.OAUTH_ENDPOINTS.userInfo, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -211,7 +211,7 @@ export const revokeTokens = async () => {
   });
 
   try {
-    const response = await fetch(`${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.revoke}`, {
+    const response = await fetch(OAUTH_CONFIG.OAUTH_ENDPOINTS.revoke, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -245,7 +245,7 @@ export const authenticateWithDrupal = async (username, password) => {
       scope: OAUTH_CONFIG.OAUTH_CONFIG.scope
     });
 
-    const response = await fetch(`${OAUTH_CONFIG.DRUPAL_BASE_URL}${OAUTH_CONFIG.OAUTH_ENDPOINTS.token}`, {
+    const response = await fetch(OAUTH_CONFIG.OAUTH_ENDPOINTS.token, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
