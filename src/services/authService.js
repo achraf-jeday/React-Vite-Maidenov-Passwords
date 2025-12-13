@@ -98,71 +98,95 @@ export const exchangeCodeForTokens = async (authorizationCode) => {
 };
 
 /**
+ * Module-level variable to track ongoing refresh request
+ * This prevents multiple simultaneous refresh token requests (race condition fix)
+ */
+let refreshPromise = null;
+
+/**
  * Refresh access token
+ * Uses singleton promise pattern to prevent concurrent refresh requests
  */
 export const refreshAccessToken = async () => {
-  const refreshToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
-
-  if (!refreshToken) {
-    throw new Error('No refresh token available');
+  // If a refresh is already in progress, return the existing promise
+  // This prevents race conditions when multiple API calls fail simultaneously
+  if (refreshPromise) {
+    return refreshPromise;
   }
 
-  const params = new URLSearchParams({
-    grant_type: 'refresh_token',
-    client_id: OAUTH_CONFIG.CLIENT_ID,
-    client_secret: OAUTH_CONFIG.CLIENT_SECRET,
-    refresh_token: refreshToken
-  });
+  // Create a new refresh promise
+  refreshPromise = (async () => {
+    try {
+      const refreshToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
 
-  const response = await fetch(OAUTH_CONFIG.OAUTH_ENDPOINTS.token, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Accept': 'application/json'
-    },
-    body: params
-  });
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
 
-  let data;
-  try {
-    data = await response.json();
-  } catch (parseError) {
-    throw new Error('Failed to parse OAuth response: ' + parseError.message);
-  }
+      const params = new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: OAUTH_CONFIG.CLIENT_ID,
+        client_secret: OAUTH_CONFIG.CLIENT_SECRET,
+        refresh_token: refreshToken
+      });
 
-  if (!response.ok) {
-    console.error('Token refresh failed:', {
-      status: response.status,
-      statusText: response.statusText,
-      error: data.error,
-      error_description: data.error_description
-    });
+      const response = await fetch(OAUTH_CONFIG.OAUTH_ENDPOINTS.token, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json'
+        },
+        body: params
+      });
 
-    // If refresh token is invalid/expired, clear tokens and redirect to login
-    if (response.status === 400 && (data.error === 'invalid_grant' || data.error === 'invalid_request')) {
-      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
-      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT);
-      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.USER_INFO);
-      throw new Error('Session expired. Please log in again.');
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        throw new Error('Failed to parse OAuth response: ' + parseError.message);
+      }
+
+      if (!response.ok) {
+        console.error('Token refresh failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: data.error,
+          error_description: data.error_description
+        });
+
+        // If refresh token is invalid/expired, clear tokens and redirect to login
+        if (response.status === 400 && (data.error === 'invalid_grant' || data.error === 'invalid_request')) {
+          localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+          localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
+          localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT);
+          localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.USER_INFO);
+          throw new Error('Session expired. Please log in again.');
+        }
+
+        throw new Error(data.error || data.error_description || 'Failed to refresh token');
+      }
+
+      // Store new tokens
+      if (data.access_token) {
+        localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
+      }
+      if (data.refresh_token) {
+        localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token);
+      }
+      if (data.expires_in) {
+        const expiresAt = Date.now() + (data.expires_in * 1000);
+        localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
+      }
+
+      return data;
+    } finally {
+      // Always clear the promise when done (success or failure)
+      // This allows future refresh requests to proceed
+      refreshPromise = null;
     }
+  })();
 
-    throw new Error(data.error || data.error_description || 'Failed to refresh token');
-  }
-
-  // Store new tokens
-  if (data.access_token) {
-    localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
-  }
-  if (data.refresh_token) {
-    localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token);
-  }
-  if (data.expires_in) {
-    const expiresAt = Date.now() + (data.expires_in * 1000);
-    localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
-  }
-
-  return data;
+  return refreshPromise;
 };
 
 /**
