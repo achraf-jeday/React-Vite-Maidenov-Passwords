@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { authenticateWithDrupal } from '../services/authService';
 import OAUTH_CONFIG from '../config/oauth';
@@ -163,15 +164,21 @@ const LoginForm = () => {
             className="login-button"
             disabled={loading}
             style={{
-              background: '#007bff',
+              background: loading ? '#9ca3af' : '#667eea',
               color: 'white',
               border: 'none',
               padding: '12px',
               borderRadius: '4px',
               fontSize: '16px',
               fontWeight: '600',
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'background-color 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) e.target.style.background = '#5568d3';
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) e.target.style.background = '#667eea';
             }}
           >
             {loading ? (
@@ -203,6 +210,26 @@ const LoginForm = () => {
               {error}
             </p>
           )}
+
+          {/* Register Link */}
+          <p style={{
+            textAlign: 'center',
+            color: '#666',
+            fontSize: '14px',
+            marginTop: '20px'
+          }}>
+            Don't have an account?{' '}
+            <Link
+              to="/register"
+              style={{
+                color: '#667eea',
+                textDecoration: 'none',
+                fontWeight: '600'
+              }}
+            >
+              Create Account
+            </Link>
+          </p>
         </form>
       </div>
     </div>

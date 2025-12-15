@@ -3,8 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Box } from '@mui/material';
 import LoginForm from './components/LoginForm';
+import RegisterForm from './components/RegisterForm';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
 import Header from './components/Header';
 import './App.css';
 
@@ -20,7 +22,9 @@ function App() {
 
 function AppLayout() {
   const { user } = useAuth();
-  const isLoginPage = window.location.pathname === '/login' || window.location.pathname === '/auth/callback';
+  const isLoginPage = window.location.pathname === '/login' ||
+                     window.location.pathname === '/register' ||
+                     window.location.pathname === '/auth/callback';
 
   return (
     <Box
@@ -69,8 +73,23 @@ function AppLayout() {
         }}
       >
         <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<LoginForm />} />
+          {/* Public routes - redirect to dashboard if already logged in */}
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <LoginForm />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <RegisterForm />
+              </PublicRoute>
+            }
+          />
           <Route path="/auth/callback" element={<LoginForm />} />
 
           {/* Protected routes */}
