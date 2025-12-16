@@ -35,12 +35,15 @@ const ElevationScroll = ({ children }) => {
 };
 
 const Header = ({ onDrawerToggle }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, loading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
 
+  console.log('Header - User state:', { user, loading, isAuthenticated });
+
   // Don't show header if user is not authenticated
-  if (!user) {
+  if (!user || loading) {
+    console.log('Header - Not showing header, user:', !!user, 'loading:', loading);
     return null;
   }
 

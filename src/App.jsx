@@ -23,12 +23,31 @@ function App() {
 }
 
 function AppLayout() {
-  const { user } = useAuth();
-  const isLoginPage = window.location.pathname === '/login' ||
-                     window.location.pathname === '/register' ||
-                     window.location.pathname === '/auth/callback' ||
-                     window.location.pathname === '/packing-key/validate' ||
-                     window.location.pathname === '/packing-key/set';
+  const { user, loading } = useAuth();
+  const [pathname, setPathname] = React.useState(window.location.pathname);
+
+  // Update pathname when it changes
+  React.useEffect(() => {
+    const handlePopState = () => {
+      setPathname(window.location.pathname);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Also update pathname when user state changes (for programmatic navigation)
+  React.useEffect(() => {
+    setPathname(window.location.pathname);
+  }, [user, loading]);
+
+  const isLoginPage = pathname === '/login' ||
+                     pathname === '/register' ||
+                     pathname === '/auth/callback' ||
+                     pathname === '/packing-key/validate' ||
+                     pathname === '/packing-key/set';
+
+  console.log('AppLayout - User state:', { user: !!user, loading, pathname });
 
   return (
     <Box
