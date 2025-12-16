@@ -199,6 +199,8 @@ export const getUserInfo = async () => {
     throw new Error('No access token available');
   }
 
+  console.log('getUserInfo - Calling userinfo endpoint with token:', accessToken.substring(0, 20) + '...');
+
   const response = await fetch(OAUTH_CONFIG.OAUTH_ENDPOINTS.userInfo, {
     method: 'GET',
     headers: {
@@ -207,11 +209,20 @@ export const getUserInfo = async () => {
     }
   });
 
+  console.log('getUserInfo - Response status:', response.status);
+
   if (!response.ok) {
-    throw new Error('Failed to get user info');
+    const errorText = await response.text().catch(() => 'No error text');
+    console.error('getUserInfo - Error response:', {
+      status: response.status,
+      statusText: response.statusText,
+      errorText: errorText
+    });
+    throw new Error(`Failed to get user info: ${response.status} ${response.statusText}`);
   }
 
   const userInfo = await response.json();
+  console.log('getUserInfo - User info received:', userInfo);
   localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.USER_INFO, JSON.stringify(userInfo));
 
   return userInfo;

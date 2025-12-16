@@ -24,8 +24,7 @@ const OAUTH_CONFIG = {
     client_secret: 'test-secret-key-12345',
     redirect_uri: `${window.location.origin}/auth/callback`,
     scope: 'basic', // Adjust based on your OAuth scopes
-    grant_type: 'password', // Changed from authorization_code to password
-    response_type: 'code'
+    grant_type: 'password' // ROPC flow doesn't need response_type
   },
 
   // Storage keys

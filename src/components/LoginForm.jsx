@@ -62,10 +62,18 @@ const LoginForm = () => {
         // Store tokens
         localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
         localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token);
+
+        let expiresAt = null;
         if (data.expires_in) {
-          const expiresAt = Date.now() + (data.expires_in * 1000);
+          expiresAt = Date.now() + (data.expires_in * 1000);
           localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
         }
+
+        console.log('Tokens stored:', {
+          accessToken: data.access_token,
+          refreshToken: data.refresh_token,
+          expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null
+        });
 
         // Fetch and store user info
         try {
