@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { authenticateWithDrupal } from '../services/authService';
+import { authenticateWithDrupal, getUserInfo } from '../services/authService';
+import apiService from '../services/apiService';
 import OAUTH_CONFIG from '../config/oauth';
 
 /**
@@ -10,8 +11,22 @@ import OAUTH_CONFIG from '../config/oauth';
  */
 const LoginForm = () => {
   const { loading, error, checkAuthStatus } = useAuth();
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  // Function to trigger auth state update after login
+  const triggerAuthUpdate = async () => {
+    try {
+      await checkAuthStatus();
+      // Force a small delay to ensure auth state is updated
+      setTimeout(() => {
+        // This will trigger a re-render and the ProtectedRoute will now allow access
+      }, 100);
+    } catch (error) {
+      console.error('Auth update failed:', error);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -52,8 +67,34 @@ const LoginForm = () => {
           localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
         }
 
-        // Redirect to dashboard
-        window.location.href = '/dashboard';
+        // Fetch and store user info
+        try {
+          const userInfo = await getUserInfo();
+          localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.USER_INFO, JSON.stringify(userInfo));
+        } catch (userInfoError) {
+          console.error('Failed to get user info:', userInfoError);
+          // Continue without user info, AuthContext will handle this
+        }
+
+        // Trigger auth state update to notify AuthContext
+        await triggerAuthUpdate();
+
+        // Check if user has a packing key set
+        try {
+          const hasPackingKey = await apiService.hasPackingKey();
+
+          if (hasPackingKey && hasPackingKey.exists) {
+            // User has a packing key, redirect to validation form
+            navigate('/packing-key/validate');
+          } else {
+            // User doesn't have a packing key, redirect to set form
+            navigate('/packing-key/set');
+          }
+        } catch (packingKeyError) {
+          console.error('Packing key check failed:', packingKeyError);
+          // If packing key check fails, redirect to set form as fallback
+          navigate('/packing-key/set');
+        }
       } else {
         alert('Login failed: ' + (data.error || 'Invalid credentials'));
       }

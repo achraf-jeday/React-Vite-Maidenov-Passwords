@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Box } from '@mui/material';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
+import PackingKeyValidationForm from './components/PackingKeyValidationForm';
+import PackingKeySetForm from './components/PackingKeySetForm';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -24,7 +26,9 @@ function AppLayout() {
   const { user } = useAuth();
   const isLoginPage = window.location.pathname === '/login' ||
                      window.location.pathname === '/register' ||
-                     window.location.pathname === '/auth/callback';
+                     window.location.pathname === '/auth/callback' ||
+                     window.location.pathname === '/packing-key/validate' ||
+                     window.location.pathname === '/packing-key/set';
 
   return (
     <Box
@@ -98,6 +102,24 @@ function AppLayout() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Packing key routes - these require authentication but are public forms */}
+          <Route
+            path="/packing-key/validate"
+            element={
+              <ProtectedRoute>
+                <PackingKeyValidationForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/packing-key/set"
+            element={
+              <ProtectedRoute>
+                <PackingKeySetForm />
               </ProtectedRoute>
             }
           />

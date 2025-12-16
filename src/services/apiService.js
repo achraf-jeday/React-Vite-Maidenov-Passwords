@@ -138,6 +138,32 @@ class ApiService {
   async deleteContent(type, id) {
     return this.delete(`/jsonapi/node/${type}/${id}`);
   }
+
+  /**
+   * Check if user has a packing key set
+   */
+  async hasPackingKey() {
+    return this.get('/api/user/packing-key/exists');
+  }
+
+  /**
+   * Set or update user's packing key
+   */
+  async setPackingKey(packingKey, packingKeyConfirmation) {
+    const data = {
+      packing_key: packingKey,
+      packing_key_confirm: packingKeyConfirmation
+    };
+    console.log('Sending to backend:', data);
+    return this.post('/api/user/packing-key', data);
+  }
+
+  /**
+   * Validate user's packing key
+   */
+  async validatePackingKey(packingKey) {
+    return this.post('/api/user/validate-packing-key', { packing_key: packingKey });
+  }
 }
 
 // Create and export singleton instance
