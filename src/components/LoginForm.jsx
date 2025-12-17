@@ -4,17 +4,36 @@ import { useAuth } from '../hooks/useAuth';
 import { authenticateWithDrupal, getUserInfo } from '../services/authService';
 import apiService from '../services/apiService';
 import OAUTH_CONFIG from '../config/oauth';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  CircularProgress,
+  Paper,
+  InputAdornment,
+  IconButton
+} from '@mui/material';
+import {
+  Person,
+  Lock,
+  Visibility,
+  VisibilityOff
+} from '@mui/icons-material';
 
 /**
  * Login Form Component
  * Handles seamless authentication with Drupal using ROPC (Resource Owner Password Credentials)
  */
 const LoginForm = () => {
-  const { loading, error, checkAuthStatus } = useAuth();
+  const { loading: authLoading, error, checkAuthStatus } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Function to trigger auth state update after login
   const triggerAuthUpdate = async () => {
@@ -39,6 +58,8 @@ const LoginForm = () => {
       setLoginError('Please enter both username and password');
       return;
     }
+
+    setLoading(true);
 
     try {
       // Authenticate directly with Drupal using ROPC flow
@@ -108,206 +129,208 @@ const LoginForm = () => {
     } catch (error) {
       console.error('Login failed:', error);
       setLoginError('Login failed: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="login-container" style={{
-      width: '100%',
-      maxWidth: '400px',
-      padding: '20px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100%',
-      boxSizing: 'border-box'
-    }}>
-      <div className="login-box" style={{
-        background: 'white',
-        padding: '40px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    <Box
+      sx={{
         width: '100%',
-        maxWidth: '400px'
-      }}>
-        <h1 style={{
-          textAlign: 'center',
-          color: '#333',
-          marginBottom: '30px',
-          fontSize: '24px',
-          fontWeight: '600'
-        }}>
+        maxWidth: '500px',
+        padding: '20px'
+      }}
+    >
+      <Paper
+        elevation={3}
+        sx={{
+          p: 4,
+          borderRadius: 2
+        }}
+      >
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{
+            textAlign: 'center',
+            fontWeight: 700,
+            color: '#333',
+            mb: 1
+          }}
+        >
           Maidenov Passwords
-        </h1>
+        </Typography>
+
+        <Typography
+          variant="body2"
+          sx={{
+            textAlign: 'center',
+            color: '#666',
+            mb: 3
+          }}
+        >
+          Sign in to access your password vault
+        </Typography>
 
         {loginError && (
-          <div style={{
-            backgroundColor: '#fee',
-            borderColor: '#fbb',
-            color: '#c33',
-            padding: '12px',
-            borderRadius: '4px',
-            marginBottom: '20px',
-            border: '1px solid',
-            fontSize: '14px'
-          }}>
+          <Alert severity="error" sx={{ mb: 3 }}>
             {loginError}
-          </div>
+          </Alert>
         )}
 
-        <form className="login-form" style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px'
-        }} onSubmit={handleLogin}>
-          <div className="form-group" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
-          }}>
-            <label htmlFor="username" style={{
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#555'
-            }}>
-              Username
-            </label>
-            <input
+        <form onSubmit={handleLogin}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            <TextField
+              fullWidth
+              label="Username"
               type="text"
-              id="username"
-              name="username"
-              placeholder="Enter your username"
               value={username}
               onChange={(e) => {
                 setUsername(e.target.value);
-                // Clear error when user starts typing
-                if (loginError) {
-                  setLoginError('');
-                }
+                if (loginError) setLoginError('');
               }}
               disabled={loading}
               required
-              style={{
-                padding: '12px 16px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '16px',
-                transition: 'border-color 0.3s ease'
+              autoComplete="username"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Person sx={{ color: '#666' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': {
+                    borderColor: '#667eea',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#667eea',
+                  },
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: '#667eea',
+                },
               }}
             />
-          </div>
 
-          <div className="form-group" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
-          }}>
-            <label htmlFor="password" style={{
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#555'
-            }}>
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="Enter your password"
+            <TextField
+              fullWidth
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
-                // Clear error when user starts typing
-                if (loginError) {
-                  setLoginError('');
-                }
+                if (loginError) setLoginError('');
               }}
               disabled={loading}
               required
-              style={{
-                padding: '12px 16px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '16px',
-                transition: 'border-color 0.3s ease'
+              autoComplete="current-password"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock sx={{ color: '#666' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&:hover fieldset': {
+                    borderColor: '#667eea',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#667eea',
+                  },
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: '#667eea',
+                },
               }}
             />
-          </div>
 
-          <button
-            type="submit"
-            className="login-button"
-            disabled={loading}
-            style={{
-              background: loading ? '#9ca3af' : '#667eea',
-              color: 'white',
-              border: 'none',
-              padding: '12px',
-              borderRadius: '4px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              if (!loading) e.target.style.background = '#5568d3';
-            }}
-            onMouseLeave={(e) => {
-              if (!loading) e.target.style.background = '#667eea';
-            }}
-          >
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Signing in...
-              </>
-            ) : (
-              'Sign In'
-            )}
-          </button>
-
-          {loading && (
-            <p className="login-hint" style={{
-              textAlign: 'center',
-              color: '#666',
-              fontSize: '14px'
-            }}>
-              Authenticating with Drupal...
-            </p>
-          )}
-
-          {error && (
-            <p className="error-message" style={{
-              color: 'red',
-              textAlign: 'center',
-              fontSize: '14px'
-            }}>
-              {error}
-            </p>
-          )}
-
-          {/* Register Link */}
-          <p style={{
-            textAlign: 'center',
-            color: '#666',
-            fontSize: '14px',
-            marginTop: '20px'
-          }}>
-            Don't have an account?{' '}
-            <Link
-              to="/register"
-              style={{
-                color: '#667eea',
-                textDecoration: 'none',
-                fontWeight: '600'
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={loading}
+              fullWidth
+              sx={{
+                mt: 1,
+                py: 1.5,
+                bgcolor: '#667eea',
+                fontSize: '16px',
+                fontWeight: 600,
+                textTransform: 'none',
+                borderRadius: 1.5,
+                '&:hover': {
+                  bgcolor: '#5568d3',
+                },
+                '&.Mui-disabled': {
+                  bgcolor: '#ccc',
+                },
               }}
             >
-              Create Account
-            </Link>
-          </p>
+              {loading ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={20} color="inherit" />
+                  <span>Signing in...</span>
+                </Box>
+              ) : (
+                'Sign In'
+              )}
+            </Button>
+
+            {loading && (
+              <Typography
+                variant="body2"
+                sx={{
+                  textAlign: 'center',
+                  color: '#666',
+                  fontSize: '14px'
+                }}
+              >
+                Authenticating with Drupal...
+              </Typography>
+            )}
+
+            <Typography
+              variant="body2"
+              sx={{
+                textAlign: 'center',
+                color: '#666',
+                mt: 2
+              }}
+            >
+              Don't have an account?{' '}
+              <Link
+                to="/register"
+                style={{
+                  color: '#667eea',
+                  textDecoration: 'none',
+                  fontWeight: 600
+                }}
+              >
+                Create Account
+              </Link>
+            </Typography>
+          </Box>
         </form>
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 };
 

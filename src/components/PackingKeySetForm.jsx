@@ -40,7 +40,6 @@ const PackingKeySetForm = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
-  const [savedPackingKey, setSavedPackingKey] = useState('');
 
   // Handle input changes
   const handleChange = (e) => {
@@ -107,8 +106,10 @@ const PackingKeySetForm = () => {
 
       if (isSuccess) {
         setSuccess(true);
-        setSavedPackingKey(formData.packingKey.trim());
         toast.success('Packing key saved successfully!');
+
+        // SECURITY: Clear the packing key from memory immediately
+        setFormData({ packingKey: '', packingKeyConfirm: '' });
 
         try {
           // Refresh the access token to get a new one
@@ -176,10 +177,10 @@ const PackingKeySetForm = () => {
                   Packing Key Set Successfully!
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 3, opacity: 0.95 }}>
-                  Your packing key has been saved.
+                  Your packing key has been saved securely.
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
-                  Partial key: {savedPackingKey ? savedPackingKey.substring(0, 4) + '****' : ''}
+                  Please remember your packing key - you'll need it to access your vault.
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 4, opacity: 0.9 }}>
                   Redirecting to dashboard...
