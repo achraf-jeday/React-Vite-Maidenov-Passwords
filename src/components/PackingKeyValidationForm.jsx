@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../services/apiService';
+import { refreshAccessToken } from '../services/authService';
 import {
   Box,
   TextField,
@@ -48,14 +49,27 @@ const PackingKeyValidationForm = () => {
     try {
       const response = await apiService.validatePackingKey(packingKey.trim());
 
-      console.log('Validation response:', response);
-
       if (response && response.valid) {
         setSuccess(true);
         toast.success('Packing key validated successfully!');
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500);
+
+        try {
+          // Refresh the access token to get a new one
+          // This handles the case where the old token might have been revoked
+          const refreshResult = await refreshAccessToken();
+          console.log('Token refreshed after packing key validation:', refreshResult);
+
+          // Navigate to dashboard after token refresh
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 1500);
+        } catch (refreshError) {
+          console.error('Token refresh failed after packing key validation:', refreshError);
+          // Still navigate to dashboard even if refresh fails
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 1500);
+        }
       } else {
         setError('Invalid packing key. Please try again.');
       }

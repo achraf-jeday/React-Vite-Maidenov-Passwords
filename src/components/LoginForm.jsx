@@ -14,6 +14,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   // Function to trigger auth state update after login
   const triggerAuthUpdate = async () => {
@@ -31,8 +32,11 @@ const LoginForm = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    // Clear any previous error
+    setLoginError('');
+
     if (!username || !password) {
-      alert('Please enter both username and password');
+      setLoginError('Please enter both username and password');
       return;
     }
 
@@ -69,12 +73,6 @@ const LoginForm = () => {
           localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
         }
 
-        console.log('Tokens stored:', {
-          accessToken: data.access_token,
-          refreshToken: data.refresh_token,
-          expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null
-        });
-
         // Fetch and store user info
         try {
           const userInfo = await getUserInfo();
@@ -104,11 +102,12 @@ const LoginForm = () => {
           navigate('/packing-key/set');
         }
       } else {
-        alert('Login failed: ' + (data.error || 'Invalid credentials'));
+        // Set error state instead of showing alert
+        setLoginError(data.error_description || data.error || 'Invalid username or password');
       }
     } catch (error) {
       console.error('Login failed:', error);
-      alert('Login failed: ' + error.message);
+      setLoginError('Login failed: ' + error.message);
     }
   };
 
@@ -141,6 +140,21 @@ const LoginForm = () => {
           Maidenov Passwords
         </h1>
 
+        {loginError && (
+          <div style={{
+            backgroundColor: '#fee',
+            borderColor: '#fbb',
+            color: '#c33',
+            padding: '12px',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            border: '1px solid',
+            fontSize: '14px'
+          }}>
+            {loginError}
+          </div>
+        )}
+
         <form className="login-form" style={{
           display: 'flex',
           flexDirection: 'column',
@@ -164,7 +178,13 @@ const LoginForm = () => {
               name="username"
               placeholder="Enter your username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                // Clear error when user starts typing
+                if (loginError) {
+                  setLoginError('');
+                }
+              }}
               disabled={loading}
               required
               style={{
@@ -195,7 +215,13 @@ const LoginForm = () => {
               name="password"
               placeholder="Enter your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                // Clear error when user starts typing
+                if (loginError) {
+                  setLoginError('');
+                }
+              }}
               disabled={loading}
               required
               style={{

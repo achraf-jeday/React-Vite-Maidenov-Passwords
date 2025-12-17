@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../services/apiService';
+import { refreshAccessToken } from '../services/authService';
 import {
   Box,
   TextField,
@@ -91,16 +92,10 @@ const PackingKeySetForm = () => {
     setErrors({});
 
     try {
-      console.log('Form data being sent:', {
-        packingKey: formData.packingKey.trim(),
-        packingKeyConfirm: formData.packingKeyConfirm.trim()
-      });
       const response = await apiService.setPackingKey(
         formData.packingKey.trim(),
         formData.packingKeyConfirm.trim()
       );
-
-      console.log('Backend response:', response);
 
       // Check for successful response - backend might return different structure
       const isSuccess = response && (
@@ -114,11 +109,24 @@ const PackingKeySetForm = () => {
         setSuccess(true);
         setSavedPackingKey(formData.packingKey.trim());
         toast.success('Packing key saved successfully!');
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
+
+        try {
+          // Refresh the access token to get a new one
+          // This handles the case where the old token was revoked by the server
+          const refreshResult = await refreshAccessToken();
+
+          // Navigate to dashboard after token refresh
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 2000);
+        } catch (refreshError) {
+          console.error('Token refresh failed after packing key update:', refreshError);
+          // Still navigate to dashboard even if refresh fails
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 2000);
+        }
       } else {
-        console.log('Response structure:', response);
         setErrors({
           general: 'Failed to save packing key. Please try again.'
         });
