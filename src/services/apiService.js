@@ -154,7 +154,6 @@ class ApiService {
       packing_key: packingKey,
       packing_key_confirm: packingKeyConfirmation
     };
-    console.log('Sending to backend:', data);
     return this.post('/api/user/packing-key', data);
   }
 

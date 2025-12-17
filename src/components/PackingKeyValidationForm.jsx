@@ -56,8 +56,7 @@ const PackingKeyValidationForm = () => {
         try {
           // Refresh the access token to get a new one
           // This handles the case where the old token might have been revoked
-          const refreshResult = await refreshAccessToken();
-          console.log('Token refreshed after packing key validation:', refreshResult);
+          await refreshAccessToken();
 
           // Navigate to dashboard after token refresh
           setTimeout(() => {

@@ -18,12 +18,6 @@ export const AuthProvider = ({ children }) => {
       const accessToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
       const refreshToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
 
-      console.log('Auth check - Tokens found:', {
-        hasAccessToken: !!accessToken,
-        hasRefreshToken: !!refreshToken,
-        accessToken: accessToken ? accessToken.substring(0, 20) + '...' : null
-      });
-
       if (!accessToken && !refreshToken) {
         setUser(null);
         setLoading(false);
@@ -32,16 +26,12 @@ export const AuthProvider = ({ children }) => {
 
       // Try to get user info or refresh token
       try {
-        console.log('Attempting to get user info...');
         const userInfo = await getUserInfo();
-        console.log('User info retrieved:', userInfo);
         setUser(userInfo);
       } catch (refreshError) {
-        console.log('User info failed, attempting token refresh...');
         // Try to refresh token
         try {
           const newTokens = await refreshAccessToken();
-          console.log('Token refresh result:', newTokens);
           if (newTokens) {
             const userInfo = await getUserInfo();
             setUser(userInfo);
@@ -49,7 +39,6 @@ export const AuthProvider = ({ children }) => {
             throw new Error('Unable to refresh tokens');
           }
         } catch (error) {
-          console.log('Token refresh failed, clearing tokens');
           // Clear stored tokens and user
           localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
           localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);

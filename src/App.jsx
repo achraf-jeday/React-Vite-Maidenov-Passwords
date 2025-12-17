@@ -47,8 +47,6 @@ function AppLayout() {
                      pathname === '/packing-key/validate' ||
                      pathname === '/packing-key/set';
 
-  console.log('AppLayout - User state:', { user: !!user, loading, pathname });
-
   return (
     <Box
       sx={{

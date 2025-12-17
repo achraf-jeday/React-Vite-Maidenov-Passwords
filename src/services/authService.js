@@ -199,8 +199,6 @@ export const getUserInfo = async () => {
     throw new Error('No access token available');
   }
 
-  console.log('getUserInfo - Calling userinfo endpoint with token:', accessToken.substring(0, 20) + '...');
-
   const response = await fetch(OAUTH_CONFIG.OAUTH_ENDPOINTS.userInfo, {
     method: 'GET',
     headers: {
@@ -208,8 +206,6 @@ export const getUserInfo = async () => {
       'Accept': 'application/json'
     }
   });
-
-  console.log('getUserInfo - Response status:', response.status);
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => 'No error text');
@@ -222,7 +218,6 @@ export const getUserInfo = async () => {
   }
 
   const userInfo = await response.json();
-  console.log('getUserInfo - User info received:', userInfo);
   localStorage.setItem(OAUTH_CONFIG.STORAGE_KEYS.USER_INFO, JSON.stringify(userInfo));
 
   return userInfo;
@@ -394,7 +389,6 @@ export const createAuthenticatedRequest = async (url, options = {}) => {
     try {
       // Try to refresh the token
       await refreshAccessToken();
-      console.log('Token refreshed automatically');
 
       // Retry the original request with new token
       const newAccessToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
