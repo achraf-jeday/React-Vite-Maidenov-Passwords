@@ -109,19 +109,24 @@ const Header = ({ onDrawerToggle }) => {
                   background: 'linear-gradient(135deg, #fff, #f0f0f0)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                  fontSize: { xs: '1.1rem', md: '1.25rem' }
                 }}
               >
-                Hormiga
+                Maidenov Passwords
               </Typography>
               <Typography
                 variant="caption"
                 sx={{
                   color: 'rgba(255, 255, 255, 0.8)',
-                  fontWeight: 500
+                  fontWeight: 500,
+                  fontStyle: 'italic',
+                  fontSize: '16px',
+                  mt: '-8px',
+                  display: 'block'
                 }}
               >
-                Admin Dashboard
+                Stay secure
               </Typography>
             </Box>
           </Box>
