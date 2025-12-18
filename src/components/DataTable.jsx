@@ -149,6 +149,12 @@ const DataTable = ({ user }) => {
   const handleEditSave = async () => {
     if (!selectedRow) return;
 
+    // Add name validation similar to create
+    if (!editFormData.name.trim()) {
+      toast.error('Pack name is required!');
+      return;
+    }
+
     try {
       await api.updateUser(selectedRow.id, editFormData);
       toast.success('User updated successfully!');
@@ -402,14 +408,35 @@ const DataTable = ({ user }) => {
             position: 'absolute',
             top: 0,
             right: 0,
-            width: '100px',
-            height: '100px',
-            background: 'rgba(255, 255, 255, 0.1)',
+            width: '160px',
+            height: '160px',
+            background: 'rgba(255, 255, 255, 0.15)',
             borderRadius: '50%',
-            transform: 'translate(20px, -20px)'
+            transform: 'translate(30px, -30px)',
+            boxShadow: '0 8px 32px rgba(255, 255, 255, 0.1)'
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: 40,
+            left: 220,
+            width: '60px',
+            height: '60px',
+            background: 'rgba(255, 255, 255, 0.08)',
+            borderRadius: '50%'
+          },
+          '& .fancy-circle': {
+            position: 'absolute',
+            bottom: -20,
+            right: 80,
+            width: '120px',
+            height: '120px',
+            background: 'rgba(255, 255, 255, 0.06)',
+            borderRadius: '50%'
           }
         }}
       >
+        <div className="fancy-circle"></div>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Box>
             <Typography variant="h6" fontWeight="700" sx={{ letterSpacing: '0.5px' }}>
@@ -818,6 +845,7 @@ const DataTable = ({ user }) => {
                   <Grid grid={12}>
                     <TextField
                       fullWidth
+                      required
                       label="Name"
                       value={editFormData.name}
                       onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
