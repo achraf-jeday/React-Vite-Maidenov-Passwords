@@ -149,10 +149,11 @@ class ApiService {
   /**
    * Set or update user's packing key
    */
-  async setPackingKey(packingKey, packingKeyConfirmation) {
+  async setPackingKey(packingKey, packingKeyConfirmation, salt) {
     const data = {
       packing_key: packingKey,
-      packing_key_confirm: packingKeyConfirmation
+      packing_key_confirm: packingKeyConfirmation,
+      salt: salt
     };
     return this.post('/api/user/packing-key', data);
   }

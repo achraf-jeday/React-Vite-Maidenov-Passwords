@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { EncryptionProvider } from './contexts/EncryptionContext';
 import { Box } from '@mui/material';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
@@ -15,9 +16,11 @@ import './App.css';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <AppLayout />
-      </Router>
+      <EncryptionProvider>
+        <Router>
+          <AppLayout />
+        </Router>
+      </EncryptionProvider>
     </AuthProvider>
   );
 }

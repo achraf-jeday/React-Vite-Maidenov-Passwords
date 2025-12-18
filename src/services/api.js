@@ -467,32 +467,34 @@ export const api = {
 
     console.log('Creating entry with user ID:', userId);
 
-    // Fetch the user's UUID from Drupal using a filter (JSON:API requires UUIDs for relationships)
-    let userUuid = userId;
+    // Fetch the user's UUID from the custom endpoint
+    let userUuid = null;
     try {
-      const userResponse = await fetch(
-        `/jsonapi/user/user?filter[drupal_internal__uid]=${userId}`,
+      const uuidResponse = await fetch(
+        `/api/user/current-uuid?_format=json`,
         {
           headers: {
-            'Accept': 'application/vnd.api+json',
+            'Accept': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         }
       );
 
-      if (userResponse.ok) {
-        const userData = await userResponse.json();
-        if (userData.data && userData.data.length > 0) {
-          userUuid = userData.data[0].id;
-          console.log('Retrieved user UUID:', userUuid, 'for user ID:', userId);
-        } else {
-          console.warn('User not found in response, using ID directly:', userId);
-        }
+      if (uuidResponse.ok) {
+        const uuidData = await uuidResponse.json();
+        userUuid = uuidData.uuid;
+        console.log('Retrieved user UUID:', userUuid);
       } else {
-        console.warn('Could not fetch user UUID (status:', userResponse.status, '), using ID directly:', userId);
+        throw new Error(`Could not fetch user UUID (status: ${uuidResponse.status})`);
       }
     } catch (error) {
-      console.warn('Error fetching user UUID:', error);
+      console.error('Error fetching user UUID:', error);
+      throw new Error('Failed to get user UUID. Please ensure you are logged in.');
+    }
+
+    // Verify we got a UUID
+    if (!userUuid) {
+      throw new Error('Could not retrieve user UUID. Please try logging in again.');
     }
 
     const requestBody = {

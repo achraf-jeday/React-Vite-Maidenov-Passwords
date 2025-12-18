@@ -1,5 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useEncryption } from '../contexts/EncryptionContext';
+import { encryptPackData, decryptPackData, decryptPacks } from '../services/packEncryptionService';
 import {
   Box,
   Paper,
@@ -49,6 +51,7 @@ import './DataTable.css';
 
 const DataTable = ({ user }) => {
   const { user: authUser } = useAuth();
+  const { getKey, isUnlocked } = useEncryption();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
@@ -80,7 +83,22 @@ const DataTable = ({ user }) => {
     setLoading(true);
     try {
       const result = await api.getUsers(page, pageSize, searchTerm, sortBy);
-      setData(result.data);
+
+      // Decrypt data if vault is unlocked
+      if (isUnlocked && result.data && result.data.length > 0) {
+        try {
+          const encryptionKey = getKey();
+          const decryptedData = await decryptPacks(result.data, encryptionKey);
+          setData(decryptedData);
+        } catch (decryptError) {
+          console.error('Decryption error:', decryptError);
+          toast.error('Failed to decrypt pack data. Please unlock your vault again.');
+          setData(result.data); // Show encrypted data as fallback
+        }
+      } else {
+        setData(result.data);
+      }
+
       setTotalCount(result.total);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -156,7 +174,21 @@ const DataTable = ({ user }) => {
     }
 
     try {
-      await api.updateUser(selectedRow.id, editFormData);
+      // Encrypt data before sending to backend
+      let dataToSend = editFormData;
+
+      if (isUnlocked) {
+        try {
+          const encryptionKey = getKey();
+          dataToSend = await encryptPackData(editFormData, encryptionKey);
+        } catch (encryptError) {
+          console.error('Encryption error:', encryptError);
+          toast.error('Failed to encrypt pack data. Please try again.');
+          return;
+        }
+      }
+
+      await api.updateUser(selectedRow.id, dataToSend);
       toast.success('User updated successfully!');
       setEditOpen(false);
       setSelectedRow(null);
@@ -378,7 +410,21 @@ const DataTable = ({ user }) => {
     }
 
     try {
-      await api.createUser(createFormData, authUser.sub);
+      // Encrypt data before sending to backend
+      let dataToSend = createFormData;
+
+      if (isUnlocked) {
+        try {
+          const encryptionKey = getKey();
+          dataToSend = await encryptPackData(createFormData, encryptionKey);
+        } catch (encryptError) {
+          console.error('Encryption error:', encryptError);
+          toast.error('Failed to encrypt pack data. Please try again.');
+          return;
+        }
+      }
+
+      await api.createUser(dataToSend, authUser.sub);
       toast.success('Pack created successfully!');
       setCreateOpen(false);
       fetchData(); // Refresh data

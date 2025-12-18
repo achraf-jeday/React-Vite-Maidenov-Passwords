@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../services/apiService';
 import { refreshAccessToken } from '../services/authService';
+import { useEncryption } from '../contexts/EncryptionContext';
 import {
   Box,
   TextField,
@@ -29,6 +30,7 @@ import toast from 'react-hot-toast';
  */
 const PackingKeyValidationForm = () => {
   const navigate = useNavigate();
+  const { deriveAndStoreKey } = useEncryption();
   const [packingKey, setPackingKey] = useState('');
   const [showPackingKey, setShowPackingKey] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -47,15 +49,29 @@ const PackingKeyValidationForm = () => {
     setError('');
 
     try {
+      // Step 1: Validate packing key with backend (also returns salt)
       const response = await apiService.validatePackingKey(packingKey.trim());
 
       if (response && response.valid) {
+        // Step 2: Extract salt from response
+        const salt = response.salt;
+
+        if (!salt) {
+          throw new Error('Salt not returned from server');
+        }
+
+        // Step 3: Derive encryption key and store in memory
+        const keyDerived = await deriveAndStoreKey(packingKey.trim(), salt);
+
+        if (!keyDerived) {
+          throw new Error('Failed to derive encryption key');
+        }
+
         setSuccess(true);
         toast.success('Packing key validated successfully!');
 
         try {
-          // Refresh the access token to get a new one
-          // This handles the case where the old token might have been revoked
+          // Refresh the access token
           await refreshAccessToken();
 
           // Navigate to dashboard after token refresh

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useEncryption } from '../contexts/EncryptionContext';
 import { useNavigate } from 'react-router-dom';
 import {
   AppBar,
@@ -36,6 +37,7 @@ const ElevationScroll = ({ children }) => {
 
 const Header = ({ onDrawerToggle }) => {
   const { user, logout, loading, isAuthenticated } = useAuth();
+  const { clearKey } = useEncryption();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -55,6 +57,9 @@ const Header = ({ onDrawerToggle }) => {
   const handleLogout = async () => {
     handleMenuClose();
     try {
+      // Clear encryption key from memory
+      clearKey();
+      // Logout from auth system
       await logout();
       navigate('/login');
     } catch (error) {

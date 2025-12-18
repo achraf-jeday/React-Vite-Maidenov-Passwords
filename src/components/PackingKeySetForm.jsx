@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../services/apiService';
 import { refreshAccessToken } from '../services/authService';
+import { useEncryption } from '../contexts/EncryptionContext';
+import { generateSalt, arrayBufferToBase64, validatePackingKey } from '../services/keyDerivationService';
 import {
   Box,
   TextField,
@@ -13,13 +15,19 @@ import {
   InputAdornment,
   IconButton,
   Fade,
-  Grow
+  Grow,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText
 } from '@mui/material';
 import {
   Lock,
   Visibility,
   VisibilityOff,
-  CheckCircle
+  CheckCircle,
+  ErrorOutline,
+  CheckCircleOutline
 } from '@mui/icons-material';
 import toast from 'react-hot-toast';
 
@@ -29,6 +37,7 @@ import toast from 'react-hot-toast';
  */
 const PackingKeySetForm = () => {
   const navigate = useNavigate();
+  const { deriveAndStoreKey } = useEncryption();
 
   const [formData, setFormData] = useState({
     packingKey: '',
@@ -40,6 +49,7 @@ const PackingKeySetForm = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
+  const [validation, setValidation] = useState({ valid: false, errors: [] });
 
   // Handle input changes
   const handleChange = (e) => {
@@ -48,6 +58,12 @@ const PackingKeySetForm = () => {
       ...prev,
       [name]: value
     }));
+
+    // Validate packing key strength in real-time
+    if (name === 'packingKey') {
+      const validationResult = validatePackingKey(value);
+      setValidation(validationResult);
+    }
 
     // Clear field-specific error when user starts typing
     if (errors[name]) {
@@ -62,11 +78,10 @@ const PackingKeySetForm = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    // Packing key validation
-    if (!formData.packingKey.trim()) {
-      newErrors.packingKey = 'Packing key is required';
-    } else if (formData.packingKey.length < 8) {
-      newErrors.packingKey = 'Packing key must be at least 8 characters long';
+    // Packing key validation using crypto service
+    const validationResult = validatePackingKey(formData.packingKey);
+    if (!validationResult.valid) {
+      newErrors.packingKey = validationResult.errors[0];
     }
 
     // Packing key confirmation validation
@@ -91,12 +106,18 @@ const PackingKeySetForm = () => {
     setErrors({});
 
     try {
+      // Step 1: Generate random salt (16 bytes)
+      const saltBuffer = generateSalt();
+      const saltBase64 = arrayBufferToBase64(saltBuffer);
+
+      // Step 2: Send packing key hash + salt to backend
       const response = await apiService.setPackingKey(
         formData.packingKey.trim(),
-        formData.packingKeyConfirm.trim()
+        formData.packingKeyConfirm.trim(),
+        saltBase64
       );
 
-      // Check for successful response - backend might return different structure
+      // Check for successful response
       const isSuccess = response && (
         response.success === true ||
         response.status === 'success' ||
@@ -105,6 +126,16 @@ const PackingKeySetForm = () => {
       );
 
       if (isSuccess) {
+        // Step 3: Derive encryption key and store in memory
+        const keyDerived = await deriveAndStoreKey(
+          formData.packingKey.trim(),
+          saltBase64
+        );
+
+        if (!keyDerived) {
+          throw new Error('Failed to derive encryption key');
+        }
+
         setSuccess(true);
         toast.success('Packing key saved successfully!');
 
@@ -112,9 +143,8 @@ const PackingKeySetForm = () => {
         setFormData({ packingKey: '', packingKeyConfirm: '' });
 
         try {
-          // Refresh the access token to get a new one
-          // This handles the case where the old token was revoked by the server
-          const refreshResult = await refreshAccessToken();
+          // Refresh the access token
+          await refreshAccessToken();
 
           // Navigate to dashboard after token refresh
           setTimeout(() => {
@@ -252,7 +282,7 @@ const PackingKeySetForm = () => {
               value={formData.packingKey}
               onChange={handleChange}
               error={!!errors.packingKey}
-              helperText={errors.packingKey || 'Min 8 characters'}
+              helperText={errors.packingKey || 'Min 16 characters with uppercase, lowercase, number, and special character'}
               disabled={loading}
               InputProps={{
                 startAdornment: (
