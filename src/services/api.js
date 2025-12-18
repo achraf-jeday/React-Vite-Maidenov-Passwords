@@ -452,6 +452,179 @@ export const api = {
         changed: result.data.attributes.changed ? new Date(result.data.attributes.changed).toLocaleDateString() : 'Unknown'
       }
     };
+  },
+
+  async createUser(data, userId) {
+    // Ensure token is fresh before making request
+    await ensureFreshToken();
+
+    const token = localStorage.getItem('maidenov_access_token');
+
+    // Validate that userId was provided
+    if (!userId) {
+      throw new Error('User ID is required to create entries. Please ensure you are logged in.');
+    }
+
+    console.log('Creating entry with user ID:', userId);
+
+    // Fetch the user's UUID from Drupal using a filter (JSON:API requires UUIDs for relationships)
+    let userUuid = userId;
+    try {
+      const userResponse = await fetch(
+        `/jsonapi/user/user?filter[drupal_internal__uid]=${userId}`,
+        {
+          headers: {
+            'Accept': 'application/vnd.api+json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        if (userData.data && userData.data.length > 0) {
+          userUuid = userData.data[0].id;
+          console.log('Retrieved user UUID:', userUuid, 'for user ID:', userId);
+        } else {
+          console.warn('User not found in response, using ID directly:', userId);
+        }
+      } else {
+        console.warn('Could not fetch user UUID (status:', userResponse.status, '), using ID directly:', userId);
+      }
+    } catch (error) {
+      console.warn('Error fetching user UUID:', error);
+    }
+
+    const requestBody = {
+      data: {
+        type: 'user_confidential_data--type_1',
+        attributes: {
+          name: data.name,
+          email: data.email || '',
+          username: data.username || '',
+          password: data.password || '',
+          notes: data.notes || ''
+        },
+        relationships: {
+          user_id: {
+            data: {
+              type: 'user--user',
+              id: userUuid
+            }
+          }
+        }
+      }
+    };
+
+    // Add link field if provided (it's a string field, not a link field)
+    if (data.link) {
+      requestBody.data.attributes.link = data.link;
+    }
+
+    const response = await fetch(
+      `/jsonapi/user_confidential_data/type_1`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/vnd.api+json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(requestBody)
+      }
+    );
+
+    if (!response.ok) {
+      // Log detailed error information
+      const errorBody = await response.text();
+      console.error('Create user failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorBody
+      });
+
+      // Handle 401 errors by refreshing token
+      if (response.status === 401 && token) {
+        try {
+          await refreshAccessToken();
+          const newToken = localStorage.getItem('maidenov_access_token');
+
+          if (newToken) {
+            // Retry with new token
+            const retryResponse = await fetch(
+              `/jsonapi/user_confidential_data/type_1`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/vnd.api+json',
+                  'Authorization': `Bearer ${newToken}`
+                },
+                body: JSON.stringify(requestBody)
+              }
+            );
+
+            if (!retryResponse.ok) {
+              const retryErrorBody = await retryResponse.text();
+              console.error('Retry create user failed:', {
+                status: retryResponse.status,
+                statusText: retryResponse.statusText,
+                body: retryErrorBody
+              });
+              throw new Error(`Failed to create user after token refresh: ${retryResponse.status}`);
+            }
+
+            const result = await retryResponse.json();
+
+            return {
+              success: true,
+              data: {
+                id: result.data.id,
+                name: result.data.attributes.name,
+                email: result.data.attributes.email,
+                username: result.data.attributes.username,
+                password: result.data.attributes.password,
+                link: result.data.attributes.link,
+                notes: result.data.attributes.notes,
+                lastLogin: result.data.attributes.last_login ? new Date(result.data.attributes.last_login).toLocaleDateString() : 'Never',
+                created: result.data.attributes.created ? new Date(result.data.attributes.created).toLocaleDateString() : 'Unknown',
+                changed: result.data.attributes.changed ? new Date(result.data.attributes.changed).toLocaleDateString() : 'Unknown'
+              }
+            };
+          } else {
+            throw new Error('Unable to refresh access token');
+          }
+        } catch (refreshError) {
+          console.error('Token refresh error:', refreshError);
+          throw new Error(`Failed to create user: ${response.status} (Token refresh failed)`);
+        }
+      } else {
+        // For non-401 errors, try to parse and show the validation error details
+        try {
+          const errorData = JSON.parse(errorBody);
+          const errorMessage = errorData.errors?.[0]?.detail || errorData.message || `Failed to create user: ${response.status}`;
+          throw new Error(errorMessage);
+        } catch (e) {
+          throw new Error(`Failed to create user: ${response.status} - ${errorBody}`);
+        }
+      }
+    }
+
+    const result = await response.json();
+
+    return {
+      success: true,
+      data: {
+        id: result.data.id,
+        name: result.data.attributes.name,
+        email: result.data.attributes.email,
+        username: result.data.attributes.username,
+        password: result.data.attributes.password,
+        link: result.data.attributes.link,
+        notes: result.data.attributes.notes,
+        lastLogin: result.data.attributes.last_login ? new Date(result.data.attributes.last_login).toLocaleDateString() : 'Never',
+        created: result.data.attributes.created ? new Date(result.data.attributes.created).toLocaleDateString() : 'Unknown',
+        changed: result.data.attributes.changed ? new Date(result.data.attributes.changed).toLocaleDateString() : 'Unknown'
+      }
+    };
   }
 };
 

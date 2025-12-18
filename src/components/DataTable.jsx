@@ -48,6 +48,7 @@ import { api } from '../services/api';
 import './DataTable.css';
 
 const DataTable = ({ user }) => {
+  const { user: authUser } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
@@ -62,6 +63,17 @@ const DataTable = ({ user }) => {
   const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  // Create modal state
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createFormData, setCreateFormData] = useState({
+    name: '',
+    email: '',
+    username: '',
+    password: '',
+    link: '',
+    notes: ''
+  });
 
   // Fetch data from API
   const fetchData = async () => {
@@ -326,6 +338,50 @@ const DataTable = ({ user }) => {
     setPage(1);
   };
 
+  const handleCreateClick = () => {
+    setCreateFormData({
+      name: '',
+      email: '',
+      username: '',
+      password: '',
+      link: '',
+      notes: ''
+    });
+    setCreateOpen(true);
+  };
+
+  const handleCreateClose = () => {
+    setCreateOpen(false);
+    setTimeout(() => {
+      const table = document.querySelector('.datatable-container');
+      if (table) {
+        table.focus();
+      }
+    }, 0);
+  };
+
+  const handleCreateSave = async () => {
+    if (!createFormData.name.trim()) {
+      toast.error('Pack name is required!');
+      return;
+    }
+
+    if (!authUser) {
+      toast.error('You must be logged in to create entries!');
+      return;
+    }
+
+    try {
+      await api.createUser(createFormData, authUser.sub);
+      toast.success('Pack created successfully!');
+      setCreateOpen(false);
+      fetchData(); // Refresh data
+    } catch (error) {
+      console.error('Error creating pack:', error);
+      toast.error(error.message || 'Failed to create pack. Please check your permissions.');
+    }
+  };
+
   return (
     <Box className="datatable-container" tabIndex={-1}>
       <Toaster position="top-right" />
@@ -363,26 +419,44 @@ const DataTable = ({ user }) => {
               {searchTerm ? `Filtered by: "${searchTerm}"` : 'Filtered packs from total'}
             </Typography>
           </Box>
-          <Tooltip title="Refresh Data">
-            <span>
-              <IconButton
-                onClick={handleRefresh}
-                disabled={loading}
-                sx={{
-                  color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                  },
-                  '&:disabled': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  }
-                }}
-              >
-                <RefreshIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
+          <Box display="flex" gap={1}>
+            <Tooltip title="Create New Pack">
+              <span>
+                <IconButton
+                  onClick={handleCreateClick}
+                  sx={{
+                    color: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    }
+                  }}
+                >
+                  <AddIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Refresh Data">
+              <span>
+                <IconButton
+                  onClick={handleRefresh}
+                  disabled={loading}
+                  sx={{
+                    color: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    },
+                    '&:disabled': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    }
+                  }}
+                >
+                  <RefreshIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
         </Box>
 
         {/* Search Section */}
@@ -815,6 +889,115 @@ const DataTable = ({ user }) => {
           </Button>
           <Button onClick={handleEditSave} variant="contained" color="primary">
             Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create Modal */}
+      <Dialog
+        open={createOpen}
+        onClose={handleCreateClose}
+        maxWidth="md"
+        fullWidth
+        keepMounted
+        disableEnforceFocus
+        className="edit-modal"
+        PaperProps={{
+          sx: {
+            minWidth: { xs: '90vw', sm: '80vw', md: '60vw', lg: '50vw' },
+            minHeight: { xs: '80vh', sm: '70vh', md: '60vh' },
+            maxHeight: { xs: '90vh', sm: '80vh', md: '70vh' }
+          }
+        }}
+      >
+        <DialogTitle>
+          Create New Pack
+        </DialogTitle>
+        <DialogContent dividers sx={{ width: '100%' }}>
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+            gap: 3,
+            width: '100%'
+          }}>
+            {/* Left Column - All fields except Notes */}
+            <Box className="edit-left-column">
+              <Grid container spacing={2}>
+                <Grid grid={12}>
+                  <TextField
+                    fullWidth
+                    label="Name"
+                    required
+                    value={createFormData.name}
+                    onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
+                    variant="outlined"
+                  />
+                </Grid>
+
+                <Grid grid={12}>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    type="email"
+                    value={createFormData.email}
+                    onChange={(e) => setCreateFormData({ ...createFormData, email: e.target.value })}
+                    variant="outlined"
+                  />
+                </Grid>
+
+                <Grid grid={12}>
+                  <TextField
+                    fullWidth
+                    label="Username"
+                    value={createFormData.username}
+                    onChange={(e) => setCreateFormData({ ...createFormData, username: e.target.value })}
+                    variant="outlined"
+                  />
+                </Grid>
+
+                <Grid grid={12}>
+                  <TextField
+                    fullWidth
+                    label="Password"
+                    type="password"
+                    value={createFormData.password}
+                    onChange={(e) => setCreateFormData({ ...createFormData, password: e.target.value })}
+                    variant="outlined"
+                  />
+                </Grid>
+
+                <Grid grid={12}>
+                  <TextField
+                    fullWidth
+                    label="Link"
+                    value={createFormData.link}
+                    onChange={(e) => setCreateFormData({ ...createFormData, link: e.target.value })}
+                    variant="outlined"
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* Right Column - Notes field only */}
+            <Box>
+              <TextField
+                fullWidth
+                label="Notes"
+                multiline
+                rows={12}
+                value={createFormData.notes}
+                onChange={(e) => setCreateFormData({ ...createFormData, notes: e.target.value })}
+                variant="outlined"
+              />
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCreateClose} variant="outlined">
+            Cancel
+          </Button>
+          <Button onClick={handleCreateSave} variant="contained" color="primary">
+            Create Pack
           </Button>
         </DialogActions>
       </Dialog>
