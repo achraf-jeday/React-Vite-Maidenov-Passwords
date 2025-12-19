@@ -9,6 +9,7 @@ import PackingKeyValidationForm from './components/PackingKeyValidationForm';
 import PackingKeySetForm from './components/PackingKeySetForm';
 import LogoutScreen from './components/LogoutScreen';
 import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import Header from './components/Header';
@@ -128,6 +129,14 @@ function AppLayout() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings/*"
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             }
           />

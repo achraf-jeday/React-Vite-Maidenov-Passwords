@@ -183,6 +183,7 @@ const Header = ({ onDrawerToggle }) => {
               Users
             </Typography>
             <Typography
+              onClick={() => navigate('/settings')}
               sx={{
                 color: 'rgba(255, 255, 255, 0.7)',
                 fontWeight: 600,
@@ -342,7 +343,7 @@ const Header = ({ onDrawerToggle }) => {
                 <Typography variant="body2">Dashboard</Typography>
               </Box>
             </MenuItem>
-            <MenuItem onClick={handleMenuClose}>
+            <MenuItem onClick={() => handleNavigate('/settings')}>
               <Box display="flex" alignItems="center" gap={2}>
                 <SettingsIcon sx={{ color: 'text.secondary' }} />
                 <Typography variant="body2">Settings</Typography>
