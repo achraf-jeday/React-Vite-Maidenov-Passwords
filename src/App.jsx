@@ -7,6 +7,7 @@ import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
 import PackingKeyValidationForm from './components/PackingKeyValidationForm';
 import PackingKeySetForm from './components/PackingKeySetForm';
+import LogoutScreen from './components/LogoutScreen';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -26,7 +27,7 @@ function App() {
 }
 
 function AppLayout() {
-  const { user, loading } = useAuth();
+  const { user, loading, loggingOut } = useAuth();
   const [pathname, setPathname] = React.useState(window.location.pathname);
 
   // Update pathname when it changes
@@ -48,7 +49,8 @@ function AppLayout() {
                      pathname === '/register' ||
                      pathname === '/auth/callback' ||
                      pathname === '/packing-key/validate' ||
-                     pathname === '/packing-key/set';
+                     pathname === '/packing-key/set' ||
+                     loggingOut;
 
   return (
     <Box
@@ -96,7 +98,11 @@ function AppLayout() {
           })
         }}
       >
-        <Routes>
+        {/* Show logout screen when logging out */}
+        {loggingOut ? (
+          <LogoutScreen />
+        ) : (
+          <Routes>
           {/* Public routes - redirect to dashboard if already logged in */}
           <Route
             path="/login"
@@ -149,7 +155,8 @@ function AppLayout() {
 
           {/* 404 route */}
           <Route path="*" element={<Navigate to="/dashboard" />} />
-        </Routes>
+          </Routes>
+        )}
       </Box>
     </Box>
   );

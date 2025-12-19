@@ -59,11 +59,13 @@ const Header = ({ onDrawerToggle }) => {
     try {
       // Clear encryption key from memory
       clearKey();
-      // Logout from auth system
+      // Logout from auth system (shows logout screen then navigates)
       await logout();
-      navigate('/login');
+      // After logout completes and screen is shown, navigate to login
+      navigate('/login', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
+      navigate('/login', { replace: true });
     }
   };
 

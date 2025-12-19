@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // Check if user is authenticated
   const checkAuthStatus = useCallback(async () => {
@@ -116,19 +117,27 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = useCallback(async () => {
+    // Set logging out state to show transition screen
+    setLoggingOut(true);
+
     try {
       await logoutFromDrupal();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear local state and storage
-      setUser(null);
+      // Clear local storage
       localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
       localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT);
       localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.USER_INFO);
       localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.STATE);
       localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.CODE_VERIFIER);
+
+      // Clear user state and reset logging out after a delay
+      setTimeout(() => {
+        setUser(null);
+        setLoggingOut(false);
+      }, 1500);
     }
   }, []);
 
@@ -146,6 +155,7 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     error,
+    loggingOut,
     login,
     logout,
     checkAuthStatus,
