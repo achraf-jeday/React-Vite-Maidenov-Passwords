@@ -460,36 +460,64 @@ export const api = {
 
     const token = localStorage.getItem('maidenov_access_token');
 
-    // Validate that userId was provided
+    // Validate that userId was provided and use it directly
+    // This ensures packs are created for the user you think you are
     if (!userId) {
       throw new Error('User ID is required to create entries. Please ensure you are logged in.');
     }
 
-    console.log('Creating entry with user ID:', userId);
+    console.log('Creating entry for user ID:', userId);
 
-    // Fetch the user's UUID from the custom endpoint
-    let userUuid = null;
+    // DEBUG: Decode and log token information
+    console.group('🔍 CREATE PACK - Token Debug Info');
+    console.log('1. Passed userId (from authUser.sub):', userId);
+    console.log('2. Token exists in localStorage:', !!token);
+
+    if (token) {
+      try {
+        const tokenParts = token.split('.');
+        const payload = JSON.parse(atob(tokenParts[1]));
+        console.log('3. Token payload.sub (user ID in token):', payload.sub);
+        console.log('4. Token issued at:', new Date(payload.iat * 1000).toLocaleString());
+        console.log('5. Token expires at:', new Date(payload.exp * 1000).toLocaleString());
+        console.log('6. Token is expired?', Date.now() > payload.exp * 1000);
+        console.log('7. Does userId match token.sub?', userId == payload.sub);
+      } catch (e) {
+        console.error('Failed to decode token:', e);
+      }
+    }
+    console.groupEnd();
+
+    // Find the correct user by their user ID using JSON:API
+    let userUuid = userId;
     try {
-      const uuidResponse = await fetch(
-        `/api/user/current-uuid?_format=json`,
+      const userResponse = await fetch(
+        `/jsonapi/user/user?filter[drupal_internal__uid]=${userId}`,
         {
           headers: {
-            'Accept': 'application/json',
+            'Accept': 'application/vnd.api+json',
             'Authorization': `Bearer ${token}`
           }
         }
       );
 
-      if (uuidResponse.ok) {
-        const uuidData = await uuidResponse.json();
-        userUuid = uuidData.uuid;
-        console.log('Retrieved user UUID:', userUuid);
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        if (userData.data && userData.data.length > 0) {
+          userUuid = userData.data[0].id;
+          const userName = userData.data[0].attributes.display_name || userData.data[0].attributes.name;
+          console.log('✅ Found correct user:', userName, '(ID:', userId, 'UUID:', userUuid, ')');
+        } else {
+          console.error('❌ User not found with ID:', userId);
+          throw new Error(`User with ID ${userId} not found in the system`);
+        }
       } else {
-        throw new Error(`Could not fetch user UUID (status: ${uuidResponse.status})`);
+        console.error('❌ Failed to fetch user data (status:', userResponse.status, ')');
+        throw new Error('Failed to verify user identity');
       }
     } catch (error) {
-      console.error('Error fetching user UUID:', error);
-      throw new Error('Failed to get user UUID. Please ensure you are logged in.');
+      console.error('❌ Error finding user by ID:', error);
+      throw new Error('Unable to verify user identity. Please check your login.');
     }
 
     // Verify we got a UUID
