@@ -130,10 +130,10 @@ const PackingKeyValidationForm = () => {
                 <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
                   Welcome Back!
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 3, opacity: 0.95 }}>
+                <Typography variant="body1" sx={{ mb: 3, opacity: 0.95 }} component="span">
                   Your packing key has been validated successfully.
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 4, opacity: 0.9 }}>
+                <Typography variant="body2" sx={{ mb: 4, opacity: 0.9 }} component="span">
                   Redirecting to dashboard...
                 </Typography>
                 <CircularProgress color="inherit" />

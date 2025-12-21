@@ -97,8 +97,8 @@ const Preferences = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
-                  <Typography variant="body1">Push Notifications</Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body1" component="span">Push Notifications</Typography>
+                  <Typography variant="body2" color="text.secondary" component="span">
                     Receive push notifications in your browser
                   </Typography>
                 </Box>
@@ -110,8 +110,8 @@ const Preferences = () => {
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
-                  <Typography variant="body1">Email Notifications</Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body1" component="span">Email Notifications</Typography>
+                  <Typography variant="body2" color="text.secondary" component="span">
                     Receive notifications via email
                   </Typography>
                 </Box>
@@ -133,8 +133,8 @@ const Preferences = () => {
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Box>
-                <Typography variant="body1">Data Sharing</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body1" component="span">Data Sharing</Typography>
+                <Typography variant="body2" color="text.secondary" component="span">
                   Share usage data to help improve the application
                 </Typography>
               </Box>

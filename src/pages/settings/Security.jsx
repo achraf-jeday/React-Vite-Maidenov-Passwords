@@ -121,7 +121,7 @@ const Security = () => {
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 Two-Factor Authentication
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" component="span">
                 Add an extra layer of security to your account
               </Typography>
             </Box>
@@ -144,7 +144,7 @@ const Security = () => {
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
             Active Sessions
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" component="span" sx={{ mb: 2 }}>
             These devices are currently signed in to your account
           </Typography>
           <List>
@@ -172,11 +172,11 @@ const Security = () => {
                     </Box>
                   }
                   secondary={
-                    <Box sx={{ mt: 0.5 }}>
+                    <Box>
                       <Typography variant="body2" color="text.secondary" component="span">
                         {session.location}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary" component="span">
+                      <Typography variant="caption" color="text.secondary" component="span" sx={{ mt: 0.5, display: 'block' }}>
                         Last active: {session.lastActive}
                       </Typography>
                     </Box>

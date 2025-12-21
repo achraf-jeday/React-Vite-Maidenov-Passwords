@@ -187,13 +187,13 @@ const RegisterForm = () => {
                 <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
                   Registration Successful!
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 3, opacity: 0.95 }}>
+                <Typography variant="body1" sx={{ mb: 3, opacity: 0.95 }} component="span">
                   Welcome, <strong>{registeredUser?.username}</strong>!
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
+                <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }} component="span">
                   Your account has been created successfully.
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 4, opacity: 0.9 }}>
+                <Typography variant="body2" sx={{ mb: 4, opacity: 0.9 }} component="span">
                   Email: {registeredUser?.email}
                 </Typography>
 

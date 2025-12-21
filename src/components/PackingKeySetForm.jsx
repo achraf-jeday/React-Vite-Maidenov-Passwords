@@ -206,13 +206,13 @@ const PackingKeySetForm = () => {
                 <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
                   Packing Key Set Successfully!
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 3, opacity: 0.95 }}>
+                <Typography variant="body1" sx={{ mb: 3, opacity: 0.95 }} component="span">
                   Your packing key has been saved securely.
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
+                <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }} component="span">
                   Please remember your packing key - you'll need it to access your vault.
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 4, opacity: 0.9 }}>
+                <Typography variant="body2" sx={{ mb: 4, opacity: 0.9 }} component="span">
                   Redirecting to dashboard...
                 </Typography>
                 <CircularProgress color="inherit" />

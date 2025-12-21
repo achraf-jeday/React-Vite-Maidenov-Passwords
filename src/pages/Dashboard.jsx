@@ -65,7 +65,7 @@ const Dashboard = () => {
           gap={2}
         >
           <CircularProgress size={48} />
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body1" color="text.secondary" component="span">
             Loading your vault...
           </Typography>
         </Box>

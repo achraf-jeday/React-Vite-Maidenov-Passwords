@@ -45,10 +45,10 @@ const LogoutScreen = () => {
               <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
                 Logging Out...
               </Typography>
-              <Typography variant="body1" sx={{ mb: 3, opacity: 0.95 }}>
+              <Typography variant="body1" sx={{ mb: 3, opacity: 0.95 }} component="span">
                 Your session is being securely terminated.
               </Typography>
-              <Typography variant="body2" sx={{ mb: 4, opacity: 0.9 }}>
+              <Typography variant="body2" sx={{ mb: 4, opacity: 0.9 }} component="span">
                 Redirecting to login page...
               </Typography>
               <CircularProgress color="inherit" />

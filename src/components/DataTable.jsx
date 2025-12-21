@@ -225,7 +225,7 @@ const DataTable = ({ user }) => {
             <Typography variant="subtitle2" fontWeight="600" sx={{ fontSize: { xs: '14px', md: '16px' } }}>
               {row.original.name}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
+            <Typography variant="body2" color="text.secondary" component="span" sx={{ display: { xs: 'none', sm: 'block' } }}>
               {row.original.email}
             </Typography>
           </Box>
@@ -244,7 +244,7 @@ const DataTable = ({ user }) => {
       header: 'Last Login',
       accessorKey: 'lastLogin',
       cell: ({ row }) => (
-        <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', lg: 'block' } }}>
+        <Typography variant="body2" color="text.secondary" component="span" sx={{ display: { xs: 'none', lg: 'block' } }}>
           {row.original.lastLogin}
         </Typography>
       ),
@@ -488,7 +488,7 @@ const DataTable = ({ user }) => {
             <Typography variant="h6" fontWeight="700" sx={{ letterSpacing: '0.5px' }}>
               Search Packs
             </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+            <Typography variant="body2" component="span" sx={{ opacity: 0.9, mt: 0.5 }}>
               {searchTerm ? `Filtered by: "${searchTerm}"` : 'Filtered packs from total'}
             </Typography>
           </Box>
@@ -704,7 +704,7 @@ const DataTable = ({ user }) => {
       >
         {/* Left section: Rows per page */}
         <Box display="flex" alignItems="center" gap={2}>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" component="span">
             Rows per page:
           </Typography>
           <TextField
@@ -1105,7 +1105,7 @@ const DataTable = ({ user }) => {
           </Box>
         </DialogTitle>
         <DialogContent>
-          <Typography variant="body1">
+          <Typography variant="body1" component="span">
             Are you sure you want to delete{' '}
             <strong>{selectedRow?.name}</strong>? This action cannot be undone.
           </Typography>

@@ -330,7 +330,7 @@ const Header = ({ onDrawerToggle }) => {
                   <Typography variant="subtitle2" fontWeight="700">
                     {user?.name || 'User'}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" component="span">
                     {user?.email || 'user@example.com'}
                   </Typography>
                 </Box>
@@ -340,20 +340,20 @@ const Header = ({ onDrawerToggle }) => {
             <MenuItem onClick={() => handleNavigate('/dashboard')}>
               <Box display="flex" alignItems="center" gap={2}>
                 <DashboardIcon sx={{ color: 'text.secondary' }} />
-                <Typography variant="body2">Dashboard</Typography>
+                <Typography variant="body2" component="span">Dashboard</Typography>
               </Box>
             </MenuItem>
             <MenuItem onClick={() => handleNavigate('/settings')}>
               <Box display="flex" alignItems="center" gap={2}>
                 <SettingsIcon sx={{ color: 'text.secondary' }} />
-                <Typography variant="body2">Settings</Typography>
+                <Typography variant="body2" component="span">Settings</Typography>
               </Box>
             </MenuItem>
             <Divider sx={{ my: 1 }} />
             <MenuItem onClick={handleLogout}>
               <Box display="flex" alignItems="center" gap={2}>
                 <LogoutIcon sx={{ color: 'error.main' }} />
-                <Typography variant="body2" color="error.main">Logout</Typography>
+                <Typography variant="body2" color="error.main" component="span">Logout</Typography>
               </Box>
             </MenuItem>
           </Menu>
