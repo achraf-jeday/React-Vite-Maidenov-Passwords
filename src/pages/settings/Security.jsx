@@ -163,7 +163,7 @@ const Security = () => {
                   primary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <LaptopIcon sx={{ fontSize: 20 }} />
-                      <Typography variant="body1" fontWeight={500}>
+                      <Typography variant="body1" fontWeight={500} component="span">
                         {session.device}
                       </Typography>
                       {session.current && (
@@ -173,10 +173,10 @@ const Security = () => {
                   }
                   secondary={
                     <Box sx={{ mt: 0.5 }}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.secondary" component="span">
                         {session.location}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" color="text.secondary" component="span">
                         Last active: {session.lastActive}
                       </Typography>
                     </Box>

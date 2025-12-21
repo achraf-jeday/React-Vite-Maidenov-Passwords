@@ -609,7 +609,7 @@ const DataTable = ({ user }) => {
         </Box>
 
         {!loading && (
-          <Typography variant="caption" sx={{ opacity: 0.8, mt: 1, display: 'block' }}>
+          <Typography variant="caption" sx={{ opacity: 0.8, mt: 1 }}>
             Last updated: {new Date().toLocaleTimeString()}
           </Typography>
         )}
@@ -654,7 +654,7 @@ const DataTable = ({ user }) => {
                 <TableRow>
                   <TableCell colSpan={columns.length} align="center" className="loading-cell">
                     <CircularProgress size={24} />
-                    <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }} component="span">
                       Loading users...
                     </Typography>
                   </TableCell>
@@ -662,7 +662,7 @@ const DataTable = ({ user }) => {
               ) : table.getRowModel().rows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={columns.length} align="center" className="empty-cell">
-                    <Typography variant="body1" color="text.secondary">
+                    <Typography variant="body1" color="text.secondary" component="span">
                       No users found
                     </Typography>
                   </TableCell>
@@ -851,7 +851,7 @@ const DataTable = ({ user }) => {
 
         {/* Right section: Results text */}
         <Box display="flex" alignItems="center">
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" component="span">
             Showing {Math.min((page - 1) * pageSize + 1, totalCount)} - {Math.min(page * pageSize, totalCount)} of {totalCount.toLocaleString()}
           </Typography>
         </Box>
