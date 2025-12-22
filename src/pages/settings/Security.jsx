@@ -172,14 +172,14 @@ const Security = () => {
                     </Box>
                   }
                   secondary={
-                    <Box>
+                    <span style={{ display: 'block' }}>
                       <Typography variant="body2" color="text.secondary" component="span">
                         {session.location}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" component="span" sx={{ mt: 0.5, display: 'block' }}>
                         Last active: {session.lastActive}
                       </Typography>
-                    </Box>
+                    </span>
                   }
                 />
                 {!session.current && (
