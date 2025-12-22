@@ -1,4 +1,5 @@
-import { createAuthenticatedRequest } from './authService';
+import { createAuthenticatedRequest, ensureFreshToken, isTokenExpired } from './authService';
+import OAUTH_CONFIG from '../config/oauth';
 
 /**
  * API Service for making authenticated requests to Drupal
@@ -16,9 +17,42 @@ class ApiService {
   }
 
   /**
+   * Check if token is expired and handle accordingly
+   * Returns true if we can proceed, false if we should abort
+   */
+  async ensureValidToken() {
+    const accessToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+    const refreshToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
+
+    // If no tokens at all, caller should handle (likely redirect to login)
+    if (!accessToken && !refreshToken) {
+      return false;
+    }
+
+    // If token is expired or about to expire, refresh it proactively
+    try {
+      await ensureFreshToken();
+      return true;
+    } catch (error) {
+      // Token refresh failed, clear tokens
+      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
+      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT);
+      localStorage.removeItem(OAUTH_CONFIG.STORAGE_KEYS.USER_INFO);
+      return false;
+    }
+  }
+
+  /**
    * Make a GET request
    */
   async get(endpoint, options = {}) {
+    // Ensure token is valid before making request
+    const canProceed = await this.ensureValidToken();
+    if (!canProceed) {
+      throw new Error('Authentication required');
+    }
+
     const url = `${this.baseURL}${endpoint}`;
     const response = await createAuthenticatedRequest(url, {
       method: 'GET',
@@ -34,6 +68,12 @@ class ApiService {
    * Make a POST request
    */
   async post(endpoint, data, options = {}) {
+    // Ensure token is valid before making request
+    const canProceed = await this.ensureValidToken();
+    if (!canProceed) {
+      throw new Error('Authentication required');
+    }
+
     const url = `${this.baseURL}${endpoint}`;
     const response = await createAuthenticatedRequest(url, {
       method: 'POST',
@@ -50,6 +90,12 @@ class ApiService {
    * Make a PUT request
    */
   async put(endpoint, data, options = {}) {
+    // Ensure token is valid before making request
+    const canProceed = await this.ensureValidToken();
+    if (!canProceed) {
+      throw new Error('Authentication required');
+    }
+
     const url = `${this.baseURL}${endpoint}`;
     const response = await createAuthenticatedRequest(url, {
       method: 'PUT',
@@ -64,6 +110,12 @@ class ApiService {
    * Make a PATCH request
    */
   async patch(endpoint, data, options = {}) {
+    // Ensure token is valid before making request
+    const canProceed = await this.ensureValidToken();
+    if (!canProceed) {
+      throw new Error('Authentication required');
+    }
+
     const url = `${this.baseURL}${endpoint}`;
     const response = await createAuthenticatedRequest(url, {
       method: 'PATCH',
@@ -78,6 +130,12 @@ class ApiService {
    * Make a DELETE request
    */
   async delete(endpoint, options = {}) {
+    // Ensure token is valid before making request
+    const canProceed = await this.ensureValidToken();
+    if (!canProceed) {
+      throw new Error('Authentication required');
+    }
+
     const url = `${this.baseURL}${endpoint}`;
     const response = await createAuthenticatedRequest(url, {
       method: 'DELETE',
@@ -92,6 +150,11 @@ class ApiService {
    */
   async handleResponse(response) {
     if (!response.ok) {
+      // For authentication errors, provide a clearer message
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }

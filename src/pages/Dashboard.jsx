@@ -44,7 +44,15 @@ const Dashboard = () => {
         setIsChecking(false);
       } catch (error) {
         console.error('Error checking packing key status:', error);
-        // On error, assume they need to set/validate packing key
+
+        // If authentication is required, redirect to login
+        if (error.message === 'Authentication required') {
+          console.log('Token expired, redirecting to login');
+          navigate('/login');
+          return;
+        }
+
+        // On other errors, assume they need to set/validate packing key
         navigate('/packing-key/validate');
       }
     };

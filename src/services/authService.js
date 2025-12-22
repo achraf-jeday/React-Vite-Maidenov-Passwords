@@ -324,6 +324,22 @@ export const logoutFromDrupal = async () => {
 };
 
 /**
+ * Check if token is expired
+ */
+export const isTokenExpired = () => {
+  const expiresAt = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.EXPIRES_AT);
+
+  if (!expiresAt) {
+    return true;
+  }
+
+  const expiryTime = parseInt(expiresAt, 10);
+  const currentTime = Date.now();
+
+  return currentTime >= expiryTime;
+};
+
+/**
  * Check if token needs refresh (within 2 minutes of expiry)
  */
 export const shouldRefreshToken = () => {
@@ -372,6 +388,17 @@ export const ensureFreshToken = async () => {
 export const createAuthenticatedRequest = async (url, options = {}) => {
   const accessToken = localStorage.getItem(OAUTH_CONFIG.STORAGE_KEYS.ACCESS_TOKEN);
 
+  // Proactively ensure token is fresh before making the request
+  // This prevents most 401 errors from occurring in the first place
+  if (accessToken && shouldRefreshToken()) {
+    try {
+      await refreshAccessToken();
+    } catch (refreshError) {
+      // If proactive refresh fails, continue with current token
+      // The reactive 401 handler below will catch it
+    }
+  }
+
   const request = fetch(url, {
     ...options,
     headers: {
@@ -382,7 +409,7 @@ export const createAuthenticatedRequest = async (url, options = {}) => {
     }
   });
 
-  // Handle automatic token refresh on 401 errors
+  // Handle automatic token refresh on 401 errors (fallback)
   const response = await request;
 
   if (response.status === 401) {
@@ -403,8 +430,8 @@ export const createAuthenticatedRequest = async (url, options = {}) => {
         }
       });
     } catch (refreshError) {
-      console.error('Automatic token refresh failed:', refreshError);
-      // Token refresh failed, return the original 401 response
+      // Token refresh failed silently, return the original 401 response
+      // Don't log to console as this is handled by the caller
       return response;
     }
   }
