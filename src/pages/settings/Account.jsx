@@ -82,10 +82,10 @@ const Account = () => {
 
         {/* Data Export */}
         <Box>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }} component="span">
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'block' }} component="span">
             Export Your Data
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }} component="span">
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, display: 'block' }} component="span">
             Download a copy of all your data including passwords, settings, and activity.
           </Typography>
           <Button

@@ -144,7 +144,7 @@ const Security = () => {
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
             Active Sessions
           </Typography>
-          <Typography variant="body2" color="text.secondary" component="span" sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" component="span" sx={{ mb: 2, display: 'block' }}>
             These devices are currently signed in to your account
           </Typography>
           <List>
