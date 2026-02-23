@@ -718,7 +718,8 @@ const handleCopy = (value, label) => {
                       className="table-header-cell"
                       sx={{
                         fontSize: { xs: '12px', md: '14px' },
-                        py: { xs: 1, md: 2 }
+                        py: { xs: 1, md: 2 },
+                        width: header.id === 'actions' ? '25%' : undefined
                       }}
                     >
                       {header.isPlaceholder ? null : (
@@ -766,7 +767,8 @@ const handleCopy = (value, label) => {
                         className="table-cell"
                         sx={{
                           fontSize: { xs: '12px', md: '14px' },
-                          py: { xs: 1, md: 2 }
+                          py: { xs: 1, md: 2 },
+                          width: cell.column.id === 'actions' ? '25%' : undefined
                         }}
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
