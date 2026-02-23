@@ -42,7 +42,12 @@ import {
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
   Logout as LogoutIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  Email as EmailIcon,
+  AccountCircle as UsernameIcon,
+  Lock as PasswordIcon,
+  Link as LinkIcon,
+  Notes as NotesIcon
 } from '@mui/icons-material';
 import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender } from '@tanstack/react-table';
 import toast, { Toaster } from 'react-hot-toast';
@@ -199,6 +204,18 @@ const DataTable = ({ user }) => {
     }
   };
 
+const handleCopy = (value, label) => {
+  if (!value) {
+    toast.error(`No ${label} to copy.`);
+    return;
+  }
+  navigator.clipboard.writeText(value).then(() => {
+    toast.success(`${label} copied to clipboard!`);
+  }).catch(() => {
+    toast.error(`Failed to copy ${label}.`);
+  });
+};
+
   // Column definitions with responsive visibility
   const columns = useMemo(() => [
     {
@@ -261,35 +278,108 @@ const DataTable = ({ user }) => {
     {
       header: 'Actions',
       id: 'actions',
-      cell: ({ row }) => (
-        <Box display="flex" gap={1}>
-          <Tooltip title="Edit">
-            <span>
-              <IconButton
-                size="small"
-                onClick={() => handleEditClick(row)}
-                color="info"
-              >
-                <EditIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <span>
-              <IconButton
-                size="small"
-                onClick={() => {
-                  setSelectedRow(row.original);
-                  setDeleteConfirmOpen(true);
-                }}
-                color="error"
-              >
-                <DeleteIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </Box>
-      ),
+      cell: ({ row }) => {
+              const email = row.original.email || '';
+              const username = row.original.username || '';
+              const password = row.original.password || '';
+              const link = typeof row.original.link === 'object' && row.original.link !== null
+                ? row.original.link.uri || ''
+                : row.original.link || '';
+              const notes = row.original.notes || '';
+
+              return (
+                <Box display="flex" gap={0.5} flexWrap="wrap">
+                  <Tooltip title={email ? 'Copy Email' : 'No Email'}>
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCopy(email, 'Email')}
+                        disabled={!email}
+                        color="primary"
+                      >
+                        <EmailIcon fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={username ? 'Copy Username' : 'No Username'}>
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCopy(username, 'Username')}
+                        disabled={!username}
+                        color="secondary"
+                      >
+                        <UsernameIcon fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={password ? 'Copy Password' : 'No Password'}>
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCopy(password, 'Password')}
+                        disabled={!password}
+                        color="warning"
+                      >
+                        <PasswordIcon fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={link ? 'Copy Link' : 'No Link'}>
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCopy(link, 'Link')}
+                        disabled={!link}
+                        color="success"
+                      >
+                        <LinkIcon fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={notes ? 'Copy Notes' : 'No Notes'}>
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCopy(notes, 'Notes')}
+                        disabled={!notes}
+                        sx={{
+                          color: notes ? '#00bcd4' : undefined,
+                          '&:hover': { bgcolor: notes ? 'rgba(0,188,212,0.08)' : undefined }
+                        }}
+                      >
+                        <NotesIcon fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title="Edit">
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEditClick(row)}
+                        color="info"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setSelectedRow(row.original);
+                          setDeleteConfirmOpen(true);
+                        }}
+                        color="error"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                </Box>
+              );
+            },
       meta: {
         responsive: {
           xs: true,  // Show on mobile
