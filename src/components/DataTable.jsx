@@ -47,7 +47,9 @@ import {
   AccountCircle as UsernameIcon,
   Lock as PasswordIcon,
   Link as LinkIcon,
-  Notes as NotesIcon
+  Notes as NotesIcon,
+  Visibility,
+  VisibilityOff
 } from '@mui/icons-material';
 import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender } from '@tanstack/react-table';
 import toast, { Toaster } from 'react-hot-toast';
@@ -71,6 +73,12 @@ const DataTable = ({ user }) => {
   const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  // Show/hide field visibility state
+  const [editShowFields, setEditShowFields] = useState({ email: false, username: false, password: false, link: false, notes: false });
+  const [createShowFields, setCreateShowFields] = useState({ email: false, username: false, password: false, link: false, notes: false });
+
+  const toggleEditField = (field) => setEditShowFields(prev => ({ ...prev, [field]: !prev[field] }));
+  const toggleCreateField = (field) => setCreateShowFields(prev => ({ ...prev, [field]: !prev[field] }));
 
   // Create modal state
   const [createOpen, setCreateOpen] = useState(false);
@@ -159,6 +167,7 @@ const DataTable = ({ user }) => {
 
   const handleEditClose = () => {
     setEditOpen(false);
+    setEditShowFields({ email: false, username: false, password: false, link: false, notes: false });
     setSelectedRow(null);
     // Ensure focus is returned to a safe element
     setTimeout(() => {
@@ -480,6 +489,7 @@ const handleCopy = (value, label) => {
 
   const handleCreateClose = () => {
     setCreateOpen(false);
+    setCreateShowFields({ email: false, username: false, password: false, link: false, notes: false });
     setTimeout(() => {
       const table = document.querySelector('.datatable-container');
       if (table) {
@@ -995,10 +1005,17 @@ const handleCopy = (value, label) => {
                     <TextField
                       fullWidth
                       label="Email"
-                      type="email"
+                      type={editShowFields.email ? 'text' : 'password'}
                       value={editFormData.email}
                       onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
                       variant="outlined"
+                      slotProps={{ input: { endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => toggleEditField('email')} edge="end">
+                            {editShowFields.email ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )}}}
                     />
                   </Grid>
 
@@ -1006,9 +1023,17 @@ const handleCopy = (value, label) => {
                     <TextField
                       fullWidth
                       label="Username"
+                      type={editShowFields.username ? 'text' : 'password'}
                       value={editFormData.username}
                       onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })}
                       variant="outlined"
+                      slotProps={{ input: { endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => toggleEditField('username')} edge="end">
+                            {editShowFields.username ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )}}}
                     />
                   </Grid>
 
@@ -1016,9 +1041,17 @@ const handleCopy = (value, label) => {
                     <TextField
                       fullWidth
                       label="Password"
+                      type={editShowFields.password ? 'text' : 'password'}
                       value={editFormData.password}
                       onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
                       variant="outlined"
+                      slotProps={{ input: { endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => toggleEditField('password')} edge="end">
+                            {editShowFields.password ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )}}}
                     />
                   </Grid>
 
@@ -1026,9 +1059,17 @@ const handleCopy = (value, label) => {
                     <TextField
                       fullWidth
                       label="Link"
+                      type={editShowFields.link ? 'text' : 'password'}
                       value={typeof editFormData.link === 'object' && editFormData.link !== null ? editFormData.link.uri || '' : editFormData.link || ''}
                       onChange={(e) => setEditFormData({ ...editFormData, link: e.target.value })}
                       variant="outlined"
+                      slotProps={{ input: { endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => toggleEditField('link')} edge="end">
+                            {editShowFields.link ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )}}}
                     />
                   </Grid>
                 </Grid>
@@ -1044,6 +1085,16 @@ const handleCopy = (value, label) => {
                   value={editFormData.notes}
                   onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
                   variant="outlined"
+                  slotProps={{ input: {
+                    endAdornment: (
+                      <InputAdornment position="end" sx={{ alignSelf: 'flex-start', mt: 1 }}>
+                        <IconButton onClick={() => toggleEditField('notes')} edge="end">
+                          {editShowFields.notes ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                    sx: editShowFields.notes ? {} : { filter: 'blur(8px)', userSelect: 'none' }
+                  }}}
                 />
               </Box>
             </Box>
@@ -1104,10 +1155,17 @@ const handleCopy = (value, label) => {
                   <TextField
                     fullWidth
                     label="Email"
-                    type="email"
+                    type={createShowFields.email ? 'text' : 'password'}
                     value={createFormData.email}
                     onChange={(e) => setCreateFormData({ ...createFormData, email: e.target.value })}
                     variant="outlined"
+                    slotProps={{ input: { endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => toggleCreateField('email')} edge="end">
+                          {createShowFields.email ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )}}}
                   />
                 </Grid>
 
@@ -1115,9 +1173,17 @@ const handleCopy = (value, label) => {
                   <TextField
                     fullWidth
                     label="Username"
+                    type={createShowFields.username ? 'text' : 'password'}
                     value={createFormData.username}
                     onChange={(e) => setCreateFormData({ ...createFormData, username: e.target.value })}
                     variant="outlined"
+                    slotProps={{ input: { endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => toggleCreateField('username')} edge="end">
+                          {createShowFields.username ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )}}}
                   />
                 </Grid>
 
@@ -1125,10 +1191,17 @@ const handleCopy = (value, label) => {
                   <TextField
                     fullWidth
                     label="Password"
-                    type="password"
+                    type={createShowFields.password ? 'text' : 'password'}
                     value={createFormData.password}
                     onChange={(e) => setCreateFormData({ ...createFormData, password: e.target.value })}
                     variant="outlined"
+                    slotProps={{ input: { endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => toggleCreateField('password')} edge="end">
+                          {createShowFields.password ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )}}}
                   />
                 </Grid>
 
@@ -1136,9 +1209,17 @@ const handleCopy = (value, label) => {
                   <TextField
                     fullWidth
                     label="Link"
+                    type={createShowFields.link ? 'text' : 'password'}
                     value={createFormData.link}
                     onChange={(e) => setCreateFormData({ ...createFormData, link: e.target.value })}
                     variant="outlined"
+                    slotProps={{ input: { endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => toggleCreateField('link')} edge="end">
+                          {createShowFields.link ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )}}}
                   />
                 </Grid>
               </Grid>
@@ -1154,6 +1235,16 @@ const handleCopy = (value, label) => {
                 value={createFormData.notes}
                 onChange={(e) => setCreateFormData({ ...createFormData, notes: e.target.value })}
                 variant="outlined"
+                slotProps={{ input: {
+                  endAdornment: (
+                    <InputAdornment position="end" sx={{ alignSelf: 'flex-start', mt: 1 }}>
+                      <IconButton onClick={() => toggleCreateField('notes')} edge="end">
+                        {createShowFields.notes ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                  sx: createShowFields.notes ? {} : { filter: 'blur(8px)', userSelect: 'none' }
+                }}}
               />
             </Box>
           </Box>
