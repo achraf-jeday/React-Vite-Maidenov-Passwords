@@ -251,9 +251,11 @@ const handleCopy = (value, label) => {
             <Typography variant="subtitle2" fontWeight="600" sx={{ fontSize: { xs: '14px', md: '16px' } }}>
               {row.original.name}
             </Typography>
-            <Typography variant="body2" color="text.secondary" component="span" sx={{ display: { xs: 'none', sm: 'block' } }}>
-              {row.original.email}
-            </Typography>
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+              <Typography variant="caption" color="text.secondary" component="div">
+                Created: {row.original.created ? new Date(row.original.created).toLocaleDateString('fr-FR') : '—'}, Last updated: {row.original.changed ? new Date(row.original.changed).toLocaleDateString('fr-FR') : '—'}
+              </Typography>
+            </Box>
           </Box>
         </Box>
       ),
