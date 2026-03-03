@@ -2,7 +2,7 @@
  * Pack Encryption Service
  *
  * Handles encryption and decryption of pack data.
- * Encrypts specific fields: name, email, username, password, link, notes
+ * Encrypts specific fields: email, username, password, link, notes
  */
 
 import { encryptFields, decryptFields } from './cryptoService';
@@ -10,7 +10,7 @@ import { encryptFields, decryptFields } from './cryptoService';
 /**
  * Fields that should be encrypted in a pack
  */
-const ENCRYPTED_FIELDS = ['name', 'email', 'username', 'password', 'link', 'notes'];
+const ENCRYPTED_FIELDS = ['email', 'username', 'password', 'link', 'notes'];
 
 /**
  * Encrypts pack data before sending to backend
