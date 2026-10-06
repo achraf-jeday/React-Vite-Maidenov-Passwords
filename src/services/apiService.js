@@ -227,6 +227,20 @@ class ApiService {
   async validatePackingKey(packingKey) {
     return this.post('/api/user/validate-packing-key', { packing_key: packingKey });
   }
+
+  /**
+   * Change user's password
+   * @param {string} currentPassword - The user's current password
+   * @param {string} newPassword - The user's new password
+   * @returns {Promise<Object>} The response from the server
+   */
+  async changePassword(currentPassword, newPassword) {
+    const data = {
+      current_password: currentPassword,
+      new_password: newPassword
+    };
+    return this.post('/api/user/change-password', data);
+  }
 }
 
 // Create and export singleton instance

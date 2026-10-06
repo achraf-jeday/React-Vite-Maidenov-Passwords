@@ -13,13 +13,17 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
-  Chip
+  Chip,
+  CircularProgress
 } from '@mui/material';
 import {
   Save as SaveIcon,
   Delete as DeleteIcon,
   LaptopMac as LaptopIcon
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { useApi } from '../../services/apiService';
+import { useAuth } from '../../hooks/useAuth';
 
 const Security = () => {
   const [passwords, setPasswords] = React.useState({
@@ -28,17 +32,85 @@ const Security = () => {
     confirmPassword: ''
   });
   const [twoFactorEnabled, setTwoFactorEnabled] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [success, setSuccess] = React.useState('');
+  const apiService = useApi();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const handlePasswordChange = (e) => {
     setPasswords({
       ...passwords,
       [e.target.name]: e.target.value
     });
+    // Clear error and success messages when user starts typing
+    setError('');
+    setSuccess('');
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    console.log('Password change requested');
+
+    // Validate form
+    if (!passwords.currentPassword) {
+      setError('Please enter your current password');
+      return;
+    }
+
+    if (!passwords.newPassword) {
+      setError('Please enter a new password');
+      return;
+    }
+
+    if (passwords.newPassword.length < 8
+      || !/[a-z]/.test(passwords.newPassword)
+      || !/[A-Z]/.test(passwords.newPassword)
+      || !/[0-9]/.test(passwords.newPassword)) {
+      setError('New password must be at least 8 characters with uppercase, lowercase, and numbers');
+      return;
+    }
+
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      setError('New passwords do not match');
+      return;
+    }
+
+    // Show loading state
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      // Call the API to change password
+      await apiService.changePassword(passwords.currentPassword, passwords.newPassword);
+      setSuccess('Password changed successfully! Please log in again with your new password.');
+      // Clear form after successful password change
+      setPasswords({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      // The server revoked all tokens, so log out and send the user to login
+      // once they have had time to read the message. The form stays disabled.
+      setTimeout(async () => {
+        await logout();
+        navigate('/login', { replace: true });
+      }, 2000);
+    } catch (err) {
+      setError(err.message || 'Failed to change password. Please try again.');
+      setIsLoading(false);
+    }
+  };
+
+  const handlePasswordCancel = () => {
+    setPasswords({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+    setError('');
+    setSuccess('');
   };
 
   const activeSessions = [
@@ -61,6 +133,16 @@ const Security = () => {
           </Typography>
           <form onSubmit={handlePasswordSubmit}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {error && (
+                <Alert severity="error">
+                  {error}
+                </Alert>
+              )}
+              {success && (
+                <Alert severity="success">
+                  {success}
+                </Alert>
+              )}
               <TextField
                 fullWidth
                 type="password"
@@ -90,13 +172,19 @@ const Security = () => {
                 variant="outlined"
               />
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                <Button variant="outlined" color="secondary">
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handlePasswordCancel}
+                  disabled={isLoading}
+                >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   variant="contained"
-                  startIcon={<SaveIcon />}
+                  disabled={isLoading}
+                  startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                   sx={{
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     color: 'white',
